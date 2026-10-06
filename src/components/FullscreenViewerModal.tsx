@@ -81,12 +81,12 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md transition-all"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xl p-2 sm:p-4 md:p-6 transition-all duration-300"
       onClick={onClose}
     >
       <div 
         ref={containerRef}
-        className="relative w-full h-full md:max-w-6xl md:h-[92vh] md:rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-2xl flex flex-col overflow-hidden text-zinc-100"
+        className="relative w-full h-full md:max-w-6xl md:h-[92vh] md:rounded-2xl bg-zinc-950 border border-zinc-700/80 shadow-[0_0_60px_rgba(0,0,0,0.9)] ring-1 ring-white/10 flex flex-col overflow-hidden text-zinc-100 z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header Bar */}

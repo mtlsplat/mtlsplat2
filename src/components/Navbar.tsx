@@ -22,6 +22,33 @@ interface NavbarProps {
   hasCustomSplats: boolean;
 }
 
+const MtlSplatEmblem: React.FC = () => (
+  <svg viewBox="0 0 36 36" fill="none" className="w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="mtlBrandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#38bdf8" />
+        <stop offset="50%" stopColor="#818cf8" />
+        <stop offset="100%" stopColor="#c084fc" />
+      </linearGradient>
+      <radialGradient id="mtlGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+        <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <circle cx="18" cy="18" r="16" stroke="url(#mtlBrandGrad)" strokeWidth="1.2" strokeDasharray="3 3" opacity="0.35" />
+    <circle cx="18" cy="18" r="6" fill="url(#mtlGlow)" />
+    <path d="M18 5L29 11.5V24.5L18 31L7 24.5V11.5L18 5Z" stroke="url(#mtlBrandGrad)" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M18 5V18L29 24.5M18 18L7 24.5" stroke="url(#mtlBrandGrad)" strokeWidth="1.4" strokeLinejoin="round" opacity="0.8" />
+    <circle cx="18" cy="5" r="1.8" fill="#38bdf8" />
+    <circle cx="29" cy="11.5" r="1.8" fill="#818cf8" />
+    <circle cx="29" cy="24.5" r="1.8" fill="#c084fc" />
+    <circle cx="18" cy="31" r="1.8" fill="#38bdf8" />
+    <circle cx="7" cy="24.5" r="1.8" fill="#818cf8" />
+    <circle cx="7" cy="11.5" r="1.8" fill="#c084fc" />
+    <circle cx="18" cy="18" r="2.2" fill="#ffffff" />
+  </svg>
+);
+
 export const Navbar: React.FC<NavbarProps> = ({
   viewMode,
   onViewModeChange,
@@ -38,21 +65,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           {/* Logo / Brand */}
           <div className="flex items-center gap-2 sm:gap-3 shrink min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-sm shrink-0">
-              <Box className="w-4 h-4 sm:w-5 sm:h-5" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-sky-500/15 via-indigo-500/10 to-purple-500/15 border border-sky-500/30 flex items-center justify-center shadow-sm shrink-0 shadow-sky-500/10">
+              <MtlSplatEmblem />
             </div>
             <div className="min-w-0 truncate">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-sm sm:text-base font-semibold text-zinc-100 tracking-tight truncate">
-                  <span className="hidden sm:inline">Gaussian Splat Gallery</span>
-                  <span className="sm:hidden">Splat Gallery</span>
+                <h1 className="text-sm sm:text-base font-extrabold tracking-tight truncate">
+                  <span className="text-white">MTL</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">SPLAT</span>
                 </h1>
-                <span className="hidden xs:inline-block text-[9px] sm:text-[10px] font-mono text-sky-400 bg-sky-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-sky-500/20 shrink-0">
-                  3D
+                <span className="inline-block text-[9px] sm:text-[10px] font-mono text-sky-400 bg-sky-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-sky-500/20 shrink-0">
+                  MTL · 3DGS
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-zinc-400 hidden md:block truncate">
-                Interactive SuperSplat Radiance Fields
+                Montréal 3D Gaussian Splats & Objets Urbains
               </p>
             </div>
           </div>

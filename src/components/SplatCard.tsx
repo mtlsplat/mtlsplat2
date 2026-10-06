@@ -42,10 +42,10 @@ export const SplatCard: React.FC<SplatCardProps> = ({
 
   return (
     <div className="group relative bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors duration-150 flex flex-col shadow-lg shadow-black/30 w-full max-w-full">
-      {/* 3D Viewport Box with Live Iframe (Direct GPU compositing, no overlapping layer) */}
+      {/* 3D Viewport Box with Live Iframe (Square format 1:1, Hardware Accelerated) */}
       <div 
         onClick={() => !isInteractive && onExplore(splat)}
-        className={`relative w-full h-[260px] xs:h-[280px] sm:h-[320px] bg-black overflow-hidden ${
+        className={`relative w-full aspect-square bg-black overflow-hidden ${
           !isInteractive ? 'cursor-pointer' : ''
         }`}
         style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
@@ -75,6 +75,18 @@ export const SplatCard: React.FC<SplatCardProps> = ({
               isInteractive ? 'pointer-events-auto' : 'pointer-events-none'
             }`}
             style={{ transform: 'translateZ(0)' }}
+          />
+        )}
+
+        {/* Direct Click Capture overlay when not in orbit mode */}
+        {!isInteractive && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onExplore(splat);
+            }}
+            className="absolute inset-0 z-10 cursor-pointer"
+            title="Click to view fullscreen"
           />
         )}
 
