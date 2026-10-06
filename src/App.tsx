@@ -125,7 +125,7 @@ export default function App() {
   const hasCustomSplats = splats.some((s) => !s.isUserOriginal);
 
   return (
-    <div className="min-h-screen bg-[#0b0c10] text-zinc-100 flex flex-col selection:bg-sky-500/30 selection:text-white">
+    <div className="min-h-screen bg-[#0b0c10] text-zinc-100 flex flex-col selection:bg-sky-500/30 selection:text-white w-full max-w-full overflow-x-hidden">
       {/* Top Navbar */}
       <Navbar
         viewMode={viewMode}
@@ -139,15 +139,15 @@ export default function App() {
       />
 
       {/* Hero Banner Area */}
-      <section className="relative border-b border-zinc-800/80 bg-gradient-to-b from-zinc-900/40 via-zinc-950/60 to-transparent">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <section className="relative border-b border-zinc-800/80 bg-gradient-to-b from-zinc-900/40 via-zinc-950/60 to-transparent w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 w-full overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="flex items-center gap-2 text-xs font-mono text-sky-400">
                 <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
                 <span>SuperSplat 3D Engine · WebGL Radiance Fields</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">
+              <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">
                 3D Gaussian Splat Gallery
               </h2>
               <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
@@ -157,7 +157,7 @@ export default function App() {
             </div>
 
             {/* Quick Stats / Info strip (Zero-pill compliant: unboxed text) */}
-            <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 border-t md:border-t-0 md:border-l border-zinc-800 pt-4 md:pt-0 md:pl-6 shrink-0">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono text-zinc-400 border-t md:border-t-0 md:border-l border-zinc-800 pt-3 md:pt-0 md:pl-6">
               <div>
                 <span className="block text-zinc-500 text-[10px] uppercase">Models In Gallery</span>
                 <span className="text-zinc-200 font-semibold text-sm">{splats.length} Scenes</span>
@@ -182,7 +182,7 @@ export default function App() {
 
           {/* Interactive Category Filter Bar */}
           {categories.length > 2 && (
-            <div className="mt-6 pt-4 border-t border-zinc-800/60 flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="mt-6 pt-4 border-t border-zinc-800/60 flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
               <span className="text-xs text-zinc-500 font-mono mr-1 shrink-0">Filter:</span>
               {categories.map((cat) => (
                 <button
@@ -203,7 +203,7 @@ export default function App() {
       </section>
 
       {/* Main Content Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-hidden">
         {/* VIEW MODE 1: GRID VIEW */}
         {viewMode === 'grid' && (
           <div>
@@ -266,8 +266,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800/80 bg-zinc-950/80 mt-16 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+      <footer className="border-t border-zinc-800/80 bg-zinc-950/80 mt-12 sm:mt-16 py-6 sm:py-8 w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 w-full overflow-hidden">
           <div className="flex items-center gap-3">
             <span>3D Gaussian Splat Gallery</span>
             <span aria-hidden="true">·</span>

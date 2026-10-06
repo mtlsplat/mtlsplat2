@@ -93,16 +93,16 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header Bar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-zinc-900/90 border-b border-zinc-800/80 backdrop-blur shrink-0 z-20">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="flex items-center justify-between px-2.5 sm:px-4 py-2.5 sm:py-3 bg-zinc-900/90 border-b border-zinc-800/80 backdrop-blur shrink-0 z-20 w-full overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 truncate">
+            <div className="flex items-center gap-1.5 min-w-0 truncate">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               <h2 className="text-sm md:text-base font-semibold text-zinc-100 truncate">
                 {splat.title}
               </h2>
             </div>
             
-            <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 font-mono">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 font-mono shrink-0">
               <span className="text-zinc-600">|</span>
               <span>ID: {splat.supersplatId}</span>
               {splat.splatCount && (
@@ -115,7 +115,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-1.5 md:gap-2">
+          <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
             <button
               onClick={onOpenGuide}
               title="Controls Guide"
@@ -128,7 +128,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
             <button
               onClick={() => onOpenEmbed(splat)}
               title="Copy Embed Code"
-              className="p-1.5 md:px-2.5 md:py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
+              className="p-1.5 md:px-2.5 md:py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors hidden xs:flex items-center gap-1.5"
             >
               <Code className="w-4 h-4" />
               <span className="hidden md:inline">Embed</span>
@@ -139,7 +139,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
               title="Reset / Reload Viewport"
               className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             <a
@@ -149,18 +149,18 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
               title="Open full scene directly on SuperSplat"
               className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </a>
 
             <button
               onClick={toggleBrowserFullscreen}
               title={isBrowserFullscreen ? 'Exit Fullscreen' : 'Native Fullscreen'}
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
+              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors hidden sm:block"
             >
               {isBrowserFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
 
-            <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
+            <div className="w-[1px] h-4 bg-zinc-800 mx-0.5 sm:mx-1" />
 
             <button
               onClick={onClose}

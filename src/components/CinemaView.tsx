@@ -34,24 +34,24 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   if (!currentSplat) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-hidden">
       {/* Primary Cinema Viewport Stage */}
       <div className="relative w-full rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl overflow-hidden flex flex-col">
         {/* Cinema Stage Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-zinc-900/90 border-b border-zinc-800 backdrop-blur z-20">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse" />
-            <div>
-              <h2 className="text-sm sm:text-base font-semibold text-zinc-100 flex items-center gap-2">
-                <span>{currentSplat.title}</span>
-                <span className="text-xs font-mono font-normal text-zinc-400 hidden sm:inline">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900/90 border-b border-zinc-800 backdrop-blur z-20 w-full overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 truncate">
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
+            <div className="min-w-0 truncate">
+              <h2 className="text-sm sm:text-base font-semibold text-zinc-100 flex items-center gap-2 truncate">
+                <span className="truncate">{currentSplat.title}</span>
+                <span className="text-xs font-mono font-normal text-zinc-400 hidden sm:inline shrink-0">
                   [{currentSplat.supersplatId}]
                 </span>
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <button
               onClick={onOpenGuide}
               title="Camera Navigation Guide"

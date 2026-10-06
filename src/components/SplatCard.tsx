@@ -27,9 +27,9 @@ export const SplatCard: React.FC<SplatCardProps> = ({
   const [isInteractive, setIsInteractive] = useState(false);
 
   return (
-    <div className="group relative bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col shadow-lg shadow-black/30 hover:shadow-sky-950/10">
+    <div className="group relative bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col shadow-lg shadow-black/30 hover:shadow-sky-950/10 w-full max-w-full">
       {/* 3D Viewport Box with Live Iframe Visible */}
-      <div className="relative w-full h-[300px] sm:h-[320px] bg-black overflow-hidden">
+      <div className="relative w-full h-[260px] xs:h-[280px] sm:h-[320px] bg-black overflow-hidden">
         {/* The Live 3D Gaussian Splat Iframe */}
         <iframe
           src={splat.url}
