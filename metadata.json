@@ -1,0 +1,8 @@
+{
+  "name": "3D Gaussian Splat Gallery",
+  "description": "An interactive spatial showcase and gallery for 3D Gaussian Splat reconstructions with live WebGL exploration, split-screen comparison, and embed tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
