@@ -26,15 +26,11 @@ import {
   ExternalLink 
 } from 'lucide-react';
 
-const STORAGE_KEY = 'gaussian_splats_gallery_data_v4';
+const STORAGE_KEY = 'gaussian_splats_gallery_data_v5';
 
-const restoreNavigationControls = (item: SplatItem): SplatItem => {
+const restoreLiveAnimation = (item: SplatItem): SplatItem => {
   if (item.url.includes('superspl.at')) {
-    // Remove noui to restore drone, marche, pivot modes
-    let cleanUrl = item.url.replace(/[?&]noui/g, '');
-    if (!cleanUrl.includes('noanim')) {
-      cleanUrl = cleanUrl.includes('?') ? `${cleanUrl}&noanim` : `${cleanUrl}?noanim`;
-    }
+    const cleanUrl = item.url.replace(/[?&]noanim/g, '').replace(/[?&]noui/g, '');
     return { ...item, url: cleanUrl };
   }
   return item;
@@ -43,11 +39,19 @@ const restoreNavigationControls = (item: SplatItem): SplatItem => {
 export default function App() {
   const [splats, setSplats] = useState<SplatItem[]>(() => {
     try {
-      const savedV4 = localStorage.getItem(STORAGE_KEY);
-      if (savedV4) {
-        const parsed = JSON.parse(savedV4);
+      const savedV5 = localStorage.getItem(STORAGE_KEY);
+      if (savedV5) {
+        const parsed = JSON.parse(savedV5);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(restoreNavigationControls);
+          return parsed.map(restoreLiveAnimation);
+        }
+      }
+
+      const savedV4 = localStorage.getItem('gaussian_splats_gallery_data_v4');
+      if (savedV4) {
+        const parsedV4 = JSON.parse(savedV4);
+        if (Array.isArray(parsedV4) && parsedV4.length > 0) {
+          return parsedV4.map(restoreLiveAnimation);
         }
       }
 
@@ -55,7 +59,7 @@ export default function App() {
       if (savedV3) {
         const parsedV3 = JSON.parse(savedV3);
         if (Array.isArray(parsedV3) && parsedV3.length > 0) {
-          return parsedV3.map(restoreNavigationControls);
+          return parsedV3.map(restoreLiveAnimation);
         }
       }
 
@@ -63,7 +67,7 @@ export default function App() {
       if (savedV2) {
         const parsedV2 = JSON.parse(savedV2);
         if (Array.isArray(parsedV2) && parsedV2.length > 0) {
-          return parsedV2.map(restoreNavigationControls);
+          return parsedV2.map(restoreLiveAnimation);
         }
       }
 
@@ -72,7 +76,7 @@ export default function App() {
         const parsedV1 = JSON.parse(savedV1);
         if (Array.isArray(parsedV1)) {
           const customOnly = parsedV1.filter((s: SplatItem) => !s.isUserOriginal);
-          return [...DEFAULT_SPLATS, ...customOnly.map(restoreNavigationControls)];
+          return [...DEFAULT_SPLATS, ...customOnly.map(restoreLiveAnimation)];
         }
       }
     } catch (e) {

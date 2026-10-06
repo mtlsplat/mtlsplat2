@@ -6,7 +6,7 @@ export const DEFAULT_SPLATS: SplatItem[] = [
     supersplatId: '300fa8ae',
     title: 'MOTO',
     description: 'Detailed 3D Gaussian Splat reconstruction of a motorcycle, capturing metallic frame reflections, engine block mechanics, handlebars, wheels, and surrounding ground surface with real-time volumetric radiance.',
-    url: 'https://superspl.at/s?id=300fa8ae&noanim',
+    url: 'https://superspl.at/s?id=300fa8ae',
     category: 'Motorcycle',
     splatCount: '~1.4M splats',
     captureNotes: 'Optimized radiance field, XR-spatial tracking enabled',
@@ -18,7 +18,7 @@ export const DEFAULT_SPLATS: SplatItem[] = [
     supersplatId: '374399b7',
     title: 'MTB',
     description: 'High-resolution mountain bike (MTB) spatial reconstruction showcasing front suspension forks, frame geometry, knobby tread tires, drivetrain components, and natural outdoor depth in full 6-DoF.',
-    url: 'https://superspl.at/s?id=374399b7&noanim',
+    url: 'https://superspl.at/s?id=374399b7',
     category: 'Mountain Bike',
     splatCount: '~980K splats',
     captureNotes: 'Real-time WebGL rendering via SuperSplat engine',
@@ -41,7 +41,7 @@ export function extractSupersplatId(input: string): { id: string; url: string } 
     const id = idMatch[1];
     return {
       id,
-      url: `https://superspl.at/s?id=${id}&noanim`,
+      url: `https://superspl.at/s?id=${id}`,
     };
   }
 
@@ -49,14 +49,13 @@ export function extractSupersplatId(input: string): { id: string; url: string } 
   if (/^[a-zA-Z0-9_-]{6,16}$/.test(targetUrl)) {
     return {
       id: targetUrl,
-      url: `https://superspl.at/s?id=${targetUrl}&noanim`,
+      url: `https://superspl.at/s?id=${targetUrl}`,
     };
   }
 
   // Case 4: Any valid http(s) URL
   if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
-    // Strip noui if present to restore drone / walk / pivot navigation
-    const cleaned = targetUrl.replace(/[?&]noui/g, '');
+    const cleaned = targetUrl.replace(/[?&]noui/g, '').replace(/[?&]noanim/g, '');
     return {
       id: 'custom-' + Math.random().toString(36).substring(2, 8),
       url: cleaned,

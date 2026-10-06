@@ -28,12 +28,9 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
   };
 
   const getCleanPreviewUrl = (rawUrl: string) => {
-    let url = rawUrl;
+    let url = rawUrl.replace(/[?&]noanim/g, '');
     if (!url.includes('noui')) {
       url = url.includes('?') ? `${url}&noui` : `${url}?noui`;
-    }
-    if (!url.includes('noanim')) {
-      url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
     }
     return url;
   };

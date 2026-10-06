@@ -26,14 +26,11 @@ export const SplatCard: React.FC<SplatCardProps> = ({
 }) => {
   const [isInteractive, setIsInteractive] = useState(false);
 
-  // Small card preview: no UI controls cluttering the card
+  // Small card preview: no UI controls cluttering the card, with live turntable animation running
   const cardUrl = React.useMemo(() => {
-    let url = splat.url;
+    let url = splat.url.replace(/[?&]noanim/g, '');
     if (!url.includes('noui')) {
       url = url.includes('?') ? `${url}&noui` : `${url}?noui`;
-    }
-    if (!url.includes('noanim')) {
-      url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
     }
     return url;
   }, [splat.url]);
