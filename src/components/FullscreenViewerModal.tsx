@@ -5,8 +5,6 @@ import {
   Minimize2, 
   RotateCcw, 
   ExternalLink, 
-  ChevronLeft, 
-  ChevronRight, 
   Code, 
   HelpCircle,
   Sparkles
@@ -17,22 +15,19 @@ interface FullscreenViewerModalProps {
   splat: SplatItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onNext?: () => void;
-  onPrev?: () => void;
   onOpenEmbed: (splat: SplatItem) => void;
   onOpenGuide: () => void;
-  hasMultiple: boolean;
+  onNext?: () => void;
+  onPrev?: () => void;
+  hasMultiple?: boolean;
 }
 
 export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
   splat,
   isOpen,
   onClose,
-  onNext,
-  onPrev,
   onOpenEmbed,
   onOpenGuide,
-  hasMultiple,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [iframeKey, setIframeKey] = useState(0);
@@ -47,16 +42,12 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
         } else {
           onClose();
         }
-      } else if (e.key === 'ArrowRight' && onNext) {
-        onNext();
-      } else if (e.key === 'ArrowLeft' && onPrev) {
-        onPrev();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onNext, onPrev, onClose]);
+  }, [isOpen, onClose]);
 
   // Track browser native fullscreen changes
   useEffect(() => {
@@ -192,33 +183,6 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
             title={splat.title}
             className="w-full h-full border-0 select-none"
           />
-
-          {/* Quick cycle overlays (Previous / Next) */}
-          {hasMultiple && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPrev?.();
-                }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-zinc-950/70 hover:bg-zinc-900 border border-zinc-700/60 text-zinc-300 hover:text-white backdrop-blur shadow-lg transition-transform hover:scale-105"
-                title="Previous Gaussian Splat (Left Arrow)"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onNext?.();
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-zinc-950/70 hover:bg-zinc-900 border border-zinc-700/60 text-zinc-300 hover:text-white backdrop-blur shadow-lg transition-transform hover:scale-105"
-                title="Next Gaussian Splat (Right Arrow)"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>

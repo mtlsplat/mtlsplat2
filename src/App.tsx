@@ -135,21 +135,6 @@ export default function App() {
     return matchesSearch && matchesCategory;
   });
 
-  // Cycle navigation in modal
-  const handleModalNext = () => {
-    if (!modalSplat || filteredSplats.length <= 1) return;
-    const currentIndex = filteredSplats.findIndex((s) => s.id === modalSplat.id);
-    const nextIndex = (currentIndex + 1) % filteredSplats.length;
-    setModalSplat(filteredSplats[nextIndex]);
-  };
-
-  const handleModalPrev = () => {
-    if (!modalSplat || filteredSplats.length <= 1) return;
-    const currentIndex = filteredSplats.findIndex((s) => s.id === modalSplat.id);
-    const prevIndex = (currentIndex - 1 + filteredSplats.length) % filteredSplats.length;
-    setModalSplat(filteredSplats[prevIndex]);
-  };
-
   const hasCustomSplats = splats.some((s) => !s.isUserOriginal);
 
   return (
@@ -336,11 +321,8 @@ export default function App() {
         splat={modalSplat}
         isOpen={!!modalSplat}
         onClose={() => setModalSplat(null)}
-        onNext={handleModalNext}
-        onPrev={handleModalPrev}
         onOpenEmbed={(s) => setEmbedSplat(s)}
         onOpenGuide={() => setIsGuideOpen(true)}
-        hasMultiple={filteredSplats.length > 1}
       />
 
       {/* Embed Code Modal */}
