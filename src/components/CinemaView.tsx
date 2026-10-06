@@ -7,8 +7,7 @@ import {
   HelpCircle,
   Eye, 
   Layers, 
-  Sliders,
-  Pencil
+  Sliders
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 
@@ -19,7 +18,6 @@ interface CinemaViewProps {
   onOpenExplore: (splat: SplatItem) => void;
   onOpenEmbed: (splat: SplatItem) => void;
   onOpenGuide: () => void;
-  onEdit?: (splat: SplatItem) => void;
 }
 
 export const CinemaView: React.FC<CinemaViewProps> = ({
@@ -29,7 +27,6 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   onOpenExplore,
   onOpenEmbed,
   onOpenGuide,
-  onEdit,
 }) => {
   const currentSplat = splats.find((s) => s.id === selectedId) || splats[0];
   const [iframeKey, setIframeKey] = useState(0);
@@ -50,15 +47,6 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
                 <span className="text-xs font-mono font-normal text-zinc-400 hidden sm:inline">
                   [{currentSplat.supersplatId}]
                 </span>
-                {onEdit && (
-                  <button
-                    onClick={() => onEdit(currentSplat)}
-                    title="Edit scene name and details"
-                    className="p-1 text-zinc-400 hover:text-zinc-100 rounded hover:bg-zinc-800 transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                )}
               </h2>
             </div>
           </div>

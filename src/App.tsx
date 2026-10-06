@@ -13,7 +13,6 @@ import { CinemaView } from './components/CinemaView';
 import { FullscreenViewerModal } from './components/FullscreenViewerModal';
 import { EmbedCodeModal } from './components/EmbedCodeModal';
 import { AddSplatModal } from './components/AddSplatModal';
-import { EditSplatModal } from './components/EditSplatModal';
 import { ControlsGuideModal } from './components/ControlsGuideModal';
 import { 
   Sparkles, 
@@ -27,16 +26,25 @@ import {
   ExternalLink 
 } from 'lucide-react';
 
-const STORAGE_KEY = 'gaussian_splats_gallery_data';
+const STORAGE_KEY = 'gaussian_splats_gallery_data_v2';
 
 export default function App() {
   const [splats, setSplats] = useState<SplatItem[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const savedV2 = localStorage.getItem(STORAGE_KEY);
+      if (savedV2) {
+        const parsed = JSON.parse(savedV2);
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
+        }
+      }
+
+      const savedV1 = localStorage.getItem('gaussian_splats_gallery_data');
+      if (savedV1) {
+        const parsedV1 = JSON.parse(savedV1);
+        if (Array.isArray(parsedV1)) {
+          const customOnly = parsedV1.filter((s: SplatItem) => !s.isUserOriginal);
+          return [...DEFAULT_SPLATS, ...customOnly];
         }
       }
     } catch (e) {
@@ -52,7 +60,6 @@ export default function App() {
   // Modals state
   const [modalSplat, setModalSplat] = useState<SplatItem | null>(null);
   const [embedSplat, setEmbedSplat] = useState<SplatItem | null>(null);
-  const [editModalSplat, setEditModalSplat] = useState<SplatItem | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   
@@ -71,13 +78,6 @@ export default function App() {
   const handleAddSplat = (newSplat: SplatItem) => {
     setSplats((prev) => [newSplat, ...prev]);
     setCinemaId(newSplat.id);
-  };
-
-  const handleSaveEdit = (updatedSplat: SplatItem) => {
-    setSplats((prev) => prev.map((s) => (s.id === updatedSplat.id ? updatedSplat : s)));
-    if (modalSplat?.id === updatedSplat.id) {
-      setModalSplat(updatedSplat);
-    }
   };
 
   const handleDeleteSplat = (id: string) => {
@@ -232,7 +232,6 @@ export default function App() {
                     splat={splat}
                     onExplore={(s) => setModalSplat(s)}
                     onEmbed={(s) => setEmbedSplat(s)}
-                    onEdit={(s) => setEditModalSplat(s)}
                     onCompareSelect={(s) => {
                       setViewMode('compare');
                     }}
@@ -253,7 +252,6 @@ export default function App() {
             onOpenExplore={(s) => setModalSplat(s)}
             onOpenEmbed={(s) => setEmbedSplat(s)}
             onOpenGuide={() => setIsGuideOpen(true)}
-            onEdit={(s) => setEditModalSplat(s)}
           />
         )}
 
@@ -314,16 +312,7 @@ export default function App() {
         onPrev={handleModalPrev}
         onOpenEmbed={(s) => setEmbedSplat(s)}
         onOpenGuide={() => setIsGuideOpen(true)}
-        onEdit={(s) => setEditModalSplat(s)}
         hasMultiple={filteredSplats.length > 1}
-      />
-
-      {/* Edit Splat Name & Details Modal */}
-      <EditSplatModal
-        splat={editModalSplat}
-        isOpen={!!editModalSplat}
-        onClose={() => setEditModalSplat(null)}
-        onSave={handleSaveEdit}
       />
 
       {/* Embed Code Modal */}

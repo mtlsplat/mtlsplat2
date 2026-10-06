@@ -9,8 +9,7 @@ import {
   ChevronRight, 
   Code, 
   HelpCircle,
-  Sparkles,
-  Pencil
+  Sparkles
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 
@@ -22,7 +21,6 @@ interface FullscreenViewerModalProps {
   onPrev?: () => void;
   onOpenEmbed: (splat: SplatItem) => void;
   onOpenGuide: () => void;
-  onEdit?: (splat: SplatItem) => void;
   hasMultiple: boolean;
 }
 
@@ -34,7 +32,6 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
   onPrev,
   onOpenEmbed,
   onOpenGuide,
-  onEdit,
   hasMultiple,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,15 +100,6 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
               <h2 className="text-sm md:text-base font-semibold text-zinc-100 truncate">
                 {splat.title}
               </h2>
-              {onEdit && (
-                <button
-                  onClick={() => onEdit(splat)}
-                  title="Rename scene"
-                  className="p-1 text-zinc-400 hover:text-zinc-100 rounded hover:bg-zinc-800 transition-colors shrink-0"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
             
             <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 font-mono">

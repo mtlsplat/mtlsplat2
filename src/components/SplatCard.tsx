@@ -5,8 +5,7 @@ import {
   Code, 
   Columns, 
   Trash2, 
-  MousePointer, 
-  Pencil 
+  MousePointer 
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 
@@ -14,7 +13,6 @@ interface SplatCardProps {
   splat: SplatItem;
   onExplore: (splat: SplatItem) => void;
   onEmbed: (splat: SplatItem) => void;
-  onEdit?: (splat: SplatItem) => void;
   onCompareSelect?: (splat: SplatItem) => void;
   onDelete?: (id: string) => void;
 }
@@ -23,7 +21,6 @@ export const SplatCard: React.FC<SplatCardProps> = ({
   splat,
   onExplore,
   onEmbed,
-  onEdit,
   onCompareSelect,
   onDelete,
 }) => {
@@ -111,24 +108,10 @@ export const SplatCard: React.FC<SplatCardProps> = ({
             <span>{splat.createdAt}</span>
           </div>
 
-          {/* Title and quick edit */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-semibold text-zinc-100 group-hover:text-sky-400 transition-colors">
-              {splat.title}
-            </h3>
-            {onEdit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(splat);
-                }}
-                title="Edit name and details"
-                className="p-1 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors shrink-0"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+          {/* Title */}
+          <h3 className="text-base font-semibold text-zinc-100 group-hover:text-sky-400 transition-colors">
+            {splat.title}
+          </h3>
 
           {/* Description */}
           <p className="mt-2 text-xs text-zinc-400 leading-relaxed line-clamp-2">
@@ -149,16 +132,6 @@ export const SplatCard: React.FC<SplatCardProps> = ({
 
           {/* Secondary Action Buttons */}
           <div className="flex items-center gap-1">
-            {onEdit && (
-              <button
-                onClick={() => onEdit(splat)}
-                title="Edit Name & Details"
-                className="p-2 rounded-lg bg-zinc-800/70 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/60 transition-colors"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-            )}
-
             <button
               onClick={() => onEmbed(splat)}
               title="Get Embed Code"
