@@ -27,6 +27,17 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
     setRightId(temp);
   };
 
+  const getCleanPreviewUrl = (rawUrl: string) => {
+    let url = rawUrl;
+    if (!url.includes('noui')) {
+      url = url.includes('?') ? `${url}&noui` : `${url}?noui`;
+    }
+    if (!url.includes('noanim')) {
+      url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
+    }
+    return url;
+  };
+
   if (!leftSplat || !rightSplat) {
     return (
       <div className="text-center py-20 text-zinc-400">
@@ -108,7 +119,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
           <div className="relative w-full h-[300px] sm:h-[450px] bg-black">
             <iframe
               key={leftKey}
-              src={leftSplat.url}
+              src={getCleanPreviewUrl(leftSplat.url)}
               allow="fullscreen; xr-spatial-tracking"
               title={leftSplat.title}
               className="w-full h-full border-0"
@@ -170,7 +181,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
           <div className="relative w-full h-[300px] sm:h-[450px] bg-black">
             <iframe
               key={rightKey}
-              src={rightSplat.url}
+              src={getCleanPreviewUrl(rightSplat.url)}
               allow="fullscreen; xr-spatial-tracking"
               title={rightSplat.title}
               className="w-full h-full border-0"

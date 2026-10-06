@@ -31,6 +31,19 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   const currentSplat = splats.find((s) => s.id === selectedId) || splats[0];
   const [iframeKey, setIframeKey] = useState(0);
 
+  // Stage preview: clean view without UI clutter; full controls available in fullscreen modal
+  const stageUrl = React.useMemo(() => {
+    if (!currentSplat) return '';
+    let url = currentSplat.url;
+    if (!url.includes('noui')) {
+      url = url.includes('?') ? `${url}&noui` : `${url}?noui`;
+    }
+    if (!url.includes('noanim')) {
+      url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
+    }
+    return url;
+  }, [currentSplat]);
+
   if (!currentSplat) return null;
 
   return (
@@ -103,7 +116,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
         <div className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black">
           <iframe
             key={iframeKey}
-            src={currentSplat.url}
+            src={stageUrl}
             allow="fullscreen; xr-spatial-tracking"
             title={currentSplat.title}
             className="w-full h-full border-0 select-none"

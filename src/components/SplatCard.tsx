@@ -26,13 +26,25 @@ export const SplatCard: React.FC<SplatCardProps> = ({
 }) => {
   const [isInteractive, setIsInteractive] = useState(false);
 
+  // Small card preview: no UI controls cluttering the card
+  const cardUrl = React.useMemo(() => {
+    let url = splat.url;
+    if (!url.includes('noui')) {
+      url = url.includes('?') ? `${url}&noui` : `${url}?noui`;
+    }
+    if (!url.includes('noanim')) {
+      url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
+    }
+    return url;
+  }, [splat.url]);
+
   return (
     <div className="group relative bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col shadow-lg shadow-black/30 hover:shadow-sky-950/10 w-full max-w-full">
       {/* 3D Viewport Box with Live Iframe Visible */}
       <div className="relative w-full h-[260px] xs:h-[280px] sm:h-[320px] bg-black overflow-hidden">
         {/* The Live 3D Gaussian Splat Iframe */}
         <iframe
-          src={splat.url}
+          src={cardUrl}
           allow="fullscreen; xr-spatial-tracking"
           title={splat.title}
           className={`w-full h-full border-0 transition-opacity duration-300 ${

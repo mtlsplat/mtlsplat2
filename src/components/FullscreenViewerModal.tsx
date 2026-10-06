@@ -80,6 +80,16 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
     setIframeKey((prev) => prev + 1);
   };
 
+  // Fullscreen view: keep navigation controls (drone, marche, pivot) fully enabled
+  const fullscreenUrl = React.useMemo(() => {
+    if (!splat) return '';
+    let url = splat.url.replace(/[?&]noui/g, '');
+    if (!url.includes('noanim')) {
+      url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
+    }
+    return url;
+  }, [splat]);
+
   if (!isOpen || !splat) return null;
 
   return (
@@ -177,7 +187,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
           <iframe
             key={iframeKey}
             id="viewer"
-            src={splat.url}
+            src={fullscreenUrl}
             allow="fullscreen; xr-spatial-tracking"
             title={splat.title}
             className="w-full h-full border-0 select-none"
