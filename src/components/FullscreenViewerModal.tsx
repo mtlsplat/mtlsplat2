@@ -174,6 +174,12 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
           className="relative flex-1 w-full bg-black flex items-center justify-center overflow-hidden"
           style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
         >
+          {/* Background poster while 3D engine loads */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center -z-10 bg-zinc-950"
+            style={{ backgroundImage: `url(https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${splat.supersplatId}/v1/xl.webp)` }}
+          />
+
           <iframe
             key={iframeKey}
             id="viewer"

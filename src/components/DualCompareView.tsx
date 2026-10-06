@@ -6,12 +6,14 @@ interface DualCompareViewProps {
   splats: SplatItem[];
   onOpenExplore: (splat: SplatItem) => void;
   onOpenEmbed: (splat: SplatItem) => void;
+  isModalOpen?: boolean;
 }
 
 export const DualCompareView: React.FC<DualCompareViewProps> = ({
   splats,
   onOpenExplore,
   onOpenEmbed,
+  isModalOpen = false,
 }) => {
   const [leftId, setLeftId] = useState<string>(splats[0]?.id || '');
   const [rightId, setRightId] = useState<string>(splats[1]?.id || splats[0]?.id || '');
@@ -20,6 +22,9 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
 
   const leftSplat = splats.find((s) => s.id === leftId) || splats[0];
   const rightSplat = splats.find((s) => s.id === rightId) || splats[1] || splats[0];
+
+  const leftPosterUrl = leftSplat ? `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${leftSplat.supersplatId}/v1/xl.webp` : '';
+  const rightPosterUrl = rightSplat ? `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${rightSplat.supersplatId}/v1/xl.webp` : '';
 
   const handleSwap = () => {
     const temp = leftId;
@@ -117,15 +122,24 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
             className="relative w-full h-[300px] sm:h-[450px] bg-black"
             style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
           >
-            <iframe
-              key={leftKey}
-              src={getCleanPreviewUrl(leftSplat.url)}
-              loading="lazy"
-              allow="fullscreen; xr-spatial-tracking"
-              title={leftSplat.title}
-              className="w-full h-full border-0 block"
-              style={{ transform: 'translateZ(0)' }}
-            />
+            {isModalOpen ? (
+              <img
+                src={leftPosterUrl}
+                alt={leftSplat.title}
+                className="w-full h-full object-cover select-none"
+                loading="lazy"
+              />
+            ) : (
+              <iframe
+                key={leftKey}
+                src={getCleanPreviewUrl(leftSplat.url)}
+                loading="lazy"
+                allow="fullscreen; xr-spatial-tracking"
+                title={leftSplat.title}
+                className="w-full h-full border-0 block"
+                style={{ transform: 'translateZ(0)' }}
+              />
+            )}
           </div>
 
           {/* Footer Metadata */}
@@ -184,15 +198,24 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
             className="relative w-full h-[300px] sm:h-[450px] bg-black"
             style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
           >
-            <iframe
-              key={rightKey}
-              src={getCleanPreviewUrl(rightSplat.url)}
-              loading="lazy"
-              allow="fullscreen; xr-spatial-tracking"
-              title={rightSplat.title}
-              className="w-full h-full border-0 block"
-              style={{ transform: 'translateZ(0)' }}
-            />
+            {isModalOpen ? (
+              <img
+                src={rightPosterUrl}
+                alt={rightSplat.title}
+                className="w-full h-full object-cover select-none"
+                loading="lazy"
+              />
+            ) : (
+              <iframe
+                key={rightKey}
+                src={getCleanPreviewUrl(rightSplat.url)}
+                loading="lazy"
+                allow="fullscreen; xr-spatial-tracking"
+                title={rightSplat.title}
+                className="w-full h-full border-0 block"
+                style={{ transform: 'translateZ(0)' }}
+              />
+            )}
           </div>
 
           {/* Footer Metadata */}

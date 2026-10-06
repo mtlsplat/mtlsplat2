@@ -18,6 +18,7 @@ interface CinemaViewProps {
   onOpenExplore: (splat: SplatItem) => void;
   onOpenEmbed: (splat: SplatItem) => void;
   onOpenGuide: () => void;
+  isModalOpen?: boolean;
 }
 
 export const CinemaView: React.FC<CinemaViewProps> = ({
@@ -27,9 +28,13 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   onOpenExplore,
   onOpenEmbed,
   onOpenGuide,
+  isModalOpen = false,
 }) => {
   const currentSplat = splats.find((s) => s.id === selectedId) || splats[0];
   const [iframeKey, setIframeKey] = useState(0);
+
+  // High-res WebP poster
+  const posterUrl = currentSplat ? `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${currentSplat.supersplatId}/v1/xl.webp` : '';
 
   // Stage preview: clean view without UI clutter, with live animation running
   const stageUrl = React.useMemo(() => {
@@ -114,15 +119,24 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
           className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black"
           style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
         >
-          <iframe
-            key={iframeKey}
-            src={stageUrl}
-            loading="lazy"
-            allow="fullscreen; xr-spatial-tracking"
-            title={currentSplat.title}
-            className="w-full h-full border-0 select-none block"
-            style={{ transform: 'translateZ(0)' }}
-          />
+          {isModalOpen ? (
+            <img
+              src={posterUrl}
+              alt={currentSplat.title}
+              className="w-full h-full object-cover select-none"
+              loading="lazy"
+            />
+          ) : (
+            <iframe
+              key={iframeKey}
+              src={stageUrl}
+              loading="lazy"
+              allow="fullscreen; xr-spatial-tracking"
+              title={currentSplat.title}
+              className="w-full h-full border-0 select-none block"
+              style={{ transform: 'translateZ(0)' }}
+            />
+          )}
         </div>
 
         {/* Technical Telemetry & Details Strip */}

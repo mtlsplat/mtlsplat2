@@ -247,6 +247,7 @@ export default function App() {
                   <SplatCard
                     key={splat.id}
                     splat={splat}
+                    isModalOpen={!!modalSplat}
                     onExplore={(s) => setModalSplat(s)}
                     onEmbed={(s) => setEmbedSplat(s)}
                     onCompareSelect={(s) => {
@@ -269,6 +270,7 @@ export default function App() {
             onOpenExplore={(s) => setModalSplat(s)}
             onOpenEmbed={(s) => setEmbedSplat(s)}
             onOpenGuide={() => setIsGuideOpen(true)}
+            isModalOpen={!!modalSplat}
           />
         )}
 
@@ -278,6 +280,7 @@ export default function App() {
             splats={splats}
             onOpenExplore={(s) => setModalSplat(s)}
             onOpenEmbed={(s) => setEmbedSplat(s)}
+            isModalOpen={!!modalSplat}
           />
         )}
       </main>
