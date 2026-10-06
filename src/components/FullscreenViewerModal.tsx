@@ -96,7 +96,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
         <div className="flex items-center justify-between px-2.5 sm:px-4 py-2.5 sm:py-3 bg-zinc-900/90 border-b border-zinc-800/80 backdrop-blur shrink-0 z-20 w-full overflow-hidden">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 truncate">
             <div className="flex items-center gap-1.5 min-w-0 truncate">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
               <h2 className="text-sm md:text-base font-semibold text-zinc-100 truncate">
                 {splat.title}
               </h2>
@@ -209,15 +209,6 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
               </button>
             </>
           )}
-
-          {/* Minimal unobtrusive bottom navigation / telemetry hint */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none px-3 py-1 rounded-full bg-zinc-950/75 border border-zinc-800/80 backdrop-blur text-[11px] text-zinc-400 flex items-center gap-3">
-            <span>Left-drag: Orbit</span>
-            <span className="text-zinc-600">·</span>
-            <span>Right-drag: Pan</span>
-            <span className="text-zinc-600">·</span>
-            <span>Wheel: Zoom</span>
-          </div>
         </div>
       </div>
     </div>

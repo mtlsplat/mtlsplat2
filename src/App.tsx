@@ -26,16 +26,32 @@ import {
   ExternalLink 
 } from 'lucide-react';
 
-const STORAGE_KEY = 'gaussian_splats_gallery_data_v2';
+const STORAGE_KEY = 'gaussian_splats_gallery_data_v3';
+
+const ensureNoUi = (item: SplatItem): SplatItem => {
+  if (item.url.includes('superspl.at') && !item.url.includes('noui')) {
+    const separator = item.url.includes('?') ? '&' : '?';
+    return { ...item, url: `${item.url}${separator}noui` };
+  }
+  return item;
+};
 
 export default function App() {
   const [splats, setSplats] = useState<SplatItem[]>(() => {
     try {
-      const savedV2 = localStorage.getItem(STORAGE_KEY);
-      if (savedV2) {
-        const parsed = JSON.parse(savedV2);
+      const savedV3 = localStorage.getItem(STORAGE_KEY);
+      if (savedV3) {
+        const parsed = JSON.parse(savedV3);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return parsed.map(ensureNoUi);
+        }
+      }
+
+      const savedV2 = localStorage.getItem('gaussian_splats_gallery_data_v2');
+      if (savedV2) {
+        const parsedV2 = JSON.parse(savedV2);
+        if (Array.isArray(parsedV2) && parsedV2.length > 0) {
+          return parsedV2.map(ensureNoUi);
         }
       }
 
@@ -44,7 +60,7 @@ export default function App() {
         const parsedV1 = JSON.parse(savedV1);
         if (Array.isArray(parsedV1)) {
           const customOnly = parsedV1.filter((s: SplatItem) => !s.isUserOriginal);
-          return [...DEFAULT_SPLATS, ...customOnly];
+          return [...DEFAULT_SPLATS, ...customOnly.map(ensureNoUi)];
         }
       }
     } catch (e) {
@@ -144,7 +160,7 @@ export default function App() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="flex items-center gap-2 text-xs font-mono text-sky-400">
-                <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
                 <span>SuperSplat 3D Engine · WebGL Radiance Fields</span>
               </div>
               <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">

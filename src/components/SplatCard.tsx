@@ -44,18 +44,13 @@ export const SplatCard: React.FC<SplatCardProps> = ({
         {!isInteractive && (
           <div 
             onClick={() => onExplore(splat)}
-            className="absolute inset-0 bg-transparent cursor-pointer z-10 flex items-center justify-center group/overlay"
-          >
-            {/* Center hover prompt */}
-            <div className="opacity-0 group-hover/overlay:opacity-100 transition-all transform group-hover/overlay:scale-100 scale-95 px-4 py-2 rounded-lg bg-zinc-950/90 border border-zinc-700/80 text-xs font-medium text-zinc-100 backdrop-blur shadow-2xl flex items-center gap-2">
-              <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
-              <span>Click to Explore Fullscreen</span>
-            </div>
-          </div>
+            className="absolute inset-0 bg-transparent cursor-pointer z-10"
+            title="Click to view fullscreen"
+          />
         )}
 
         {/* Top Floating Controls on Card Viewport */}
-        <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
           {/* Card Direct Interactive Toggle */}
           <button
             type="button"
@@ -85,14 +80,6 @@ export const SplatCard: React.FC<SplatCardProps> = ({
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
-        </div>
-
-        {/* Left top indicator */}
-        <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none">
-          <div className="px-2 py-0.5 rounded-md bg-zinc-950/85 border border-zinc-800 text-[10px] font-mono text-zinc-300 backdrop-blur flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{splat.supersplatId}</span>
-          </div>
         </div>
       </div>
 

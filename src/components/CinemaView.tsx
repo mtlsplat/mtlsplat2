@@ -40,7 +40,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
         {/* Cinema Stage Header */}
         <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900/90 border-b border-zinc-800 backdrop-blur z-20 w-full overflow-hidden">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 truncate">
-            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
             <div className="min-w-0 truncate">
               <h2 className="text-sm sm:text-base font-semibold text-zinc-100 flex items-center gap-2 truncate">
                 <span className="truncate">{currentSplat.title}</span>
@@ -100,7 +100,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
         </div>
 
         {/* Big Stage Viewer Frame */}
-        <div className="relative w-full h-[540px] sm:h-[620px] bg-black">
+        <div className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black">
           <iframe
             key={iframeKey}
             src={currentSplat.url}
@@ -108,11 +108,6 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
             title={currentSplat.title}
             className="w-full h-full border-0 select-none"
           />
-
-          {/* Minimal unobtrusive corner badge */}
-          <div className="absolute bottom-3 right-3 pointer-events-none px-2.5 py-1 rounded bg-zinc-950/80 border border-zinc-800 text-[11px] font-mono text-zinc-400 backdrop-blur">
-            WebGL 3D Radiance Engine
-          </div>
         </div>
 
         {/* Technical Telemetry & Details Strip */}
