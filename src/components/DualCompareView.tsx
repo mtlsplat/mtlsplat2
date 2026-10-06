@@ -113,13 +113,18 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
           </div>
 
           {/* Viewer Frame */}
-          <div className="relative w-full h-[300px] sm:h-[450px] bg-black">
+          <div 
+            className="relative w-full h-[300px] sm:h-[450px] bg-black"
+            style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
+          >
             <iframe
               key={leftKey}
               src={getCleanPreviewUrl(leftSplat.url)}
+              loading="lazy"
               allow="fullscreen; xr-spatial-tracking"
               title={leftSplat.title}
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 block"
+              style={{ transform: 'translateZ(0)' }}
             />
           </div>
 
@@ -175,13 +180,18 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
           </div>
 
           {/* Viewer Frame */}
-          <div className="relative w-full h-[300px] sm:h-[450px] bg-black">
+          <div 
+            className="relative w-full h-[300px] sm:h-[450px] bg-black"
+            style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
+          >
             <iframe
               key={rightKey}
               src={getCleanPreviewUrl(rightSplat.url)}
+              loading="lazy"
               allow="fullscreen; xr-spatial-tracking"
               title={rightSplat.title}
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 block"
+              style={{ transform: 'translateZ(0)' }}
             />
           </div>
 

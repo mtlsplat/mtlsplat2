@@ -36,17 +36,22 @@ export const SplatCard: React.FC<SplatCardProps> = ({
   }, [splat.url]);
 
   return (
-    <div className="group relative bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col shadow-lg shadow-black/30 hover:shadow-sky-950/10 w-full max-w-full">
-      {/* 3D Viewport Box with Live Iframe Visible */}
-      <div className="relative w-full h-[260px] xs:h-[280px] sm:h-[320px] bg-black overflow-hidden">
+    <div className="group relative bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors duration-150 flex flex-col shadow-lg shadow-black/30 w-full max-w-full">
+      {/* 3D Viewport Box with Live Iframe Visible (Hardware Accelerated & Contained) */}
+      <div 
+        className="relative w-full h-[260px] xs:h-[280px] sm:h-[320px] bg-black overflow-hidden"
+        style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
+      >
         {/* The Live 3D Gaussian Splat Iframe */}
         <iframe
           src={cardUrl}
+          loading="lazy"
           allow="fullscreen; xr-spatial-tracking"
           title={splat.title}
-          className={`w-full h-full border-0 transition-opacity duration-300 ${
+          className={`w-full h-full border-0 block ${
             isInteractive ? 'pointer-events-auto' : 'pointer-events-none'
           }`}
+          style={{ transform: 'translateZ(0)' }}
         />
 
         {/* Overlay when NOT in direct card-interaction mode */}

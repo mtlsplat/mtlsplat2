@@ -170,14 +170,18 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
         </div>
 
         {/* Modal Main Viewport Container */}
-        <div className="relative flex-1 w-full bg-black flex items-center justify-center overflow-hidden">
+        <div 
+          className="relative flex-1 w-full bg-black flex items-center justify-center overflow-hidden"
+          style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
+        >
           <iframe
             key={iframeKey}
             id="viewer"
             src={fullscreenUrl}
             allow="fullscreen; xr-spatial-tracking"
             title={splat.title}
-            className="w-full h-full border-0 select-none"
+            className="w-full h-full border-0 select-none block"
+            style={{ transform: 'translateZ(0)' }}
           />
         </div>
       </div>

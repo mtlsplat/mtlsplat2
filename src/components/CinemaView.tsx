@@ -110,13 +110,18 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
         </div>
 
         {/* Big Stage Viewer Frame */}
-        <div className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black">
+        <div 
+          className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black"
+          style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
+        >
           <iframe
             key={iframeKey}
             src={stageUrl}
+            loading="lazy"
             allow="fullscreen; xr-spatial-tracking"
             title={currentSplat.title}
-            className="w-full h-full border-0 select-none"
+            className="w-full h-full border-0 select-none block"
+            style={{ transform: 'translateZ(0)' }}
           />
         </div>
 
