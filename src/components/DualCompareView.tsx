@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Columns, ArrowLeftRight, Maximize2, ExternalLink, Code, RotateCcw } from 'lucide-react';
+import { Columns, ArrowLeftRight, Maximize2, ExternalLink, Code, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { SplatItem } from '../types/splat';
+import { getSplatPosterUrl } from '../data/defaultSplats';
 
 interface DualCompareViewProps {
   splats: SplatItem[];
   onOpenExplore: (splat: SplatItem) => void;
   onOpenEmbed: (splat: SplatItem) => void;
   isModalOpen?: boolean;
+  is3DPreviewEnabled?: boolean;
 }
 
 export const DualCompareView: React.FC<DualCompareViewProps> = ({
@@ -14,17 +16,25 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
   onOpenExplore,
   onOpenEmbed,
   isModalOpen = false,
+  is3DPreviewEnabled = true,
 }) => {
   const [leftId, setLeftId] = useState<string>(splats[0]?.id || '');
   const [rightId, setRightId] = useState<string>(splats[1]?.id || splats[0]?.id || '');
   const [leftKey, setLeftKey] = useState(0);
   const [rightKey, setRightKey] = useState(0);
+  const [localOverride, setLocalOverride] = useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    setLocalOverride(null);
+  }, [is3DPreviewEnabled]);
+
+  const isPreviewActive = localOverride !== null ? localOverride : is3DPreviewEnabled;
 
   const leftSplat = splats.find((s) => s.id === leftId) || splats[0];
   const rightSplat = splats.find((s) => s.id === rightId) || splats[1] || splats[0];
 
-  const leftPosterUrl = leftSplat ? `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${leftSplat.supersplatId}/v1/xl.webp` : '';
-  const rightPosterUrl = rightSplat ? `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${rightSplat.supersplatId}/v1/xl.webp` : '';
+  const leftPosterUrl = leftSplat ? getSplatPosterUrl(leftSplat) : '';
+  const rightPosterUrl = rightSplat ? getSplatPosterUrl(rightSplat) : '';
 
   const handleSwap = () => {
     const temp = leftId;
@@ -62,13 +72,42 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={handleSwap}
-          className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono flex items-center gap-1.5 transition-colors border border-zinc-700/60 shrink-0"
-        >
-          <ArrowLeftRight className="w-3.5 h-3.5 text-sky-400" />
-          <span>Swap Viewports</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Masquer / Démasquer Preview 3D */}
+          <button
+            onClick={() => setLocalOverride(!isPreviewActive)}
+            title={
+              isPreviewActive
+                ? 'Masquer les 2 vues 3D pour alléger (Mode Éco · 0% GPU)'
+                : 'Démasquer les 2 vues 3D interactives'
+            }
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors border ${
+              isPreviewActive
+                ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700/60'
+                : 'bg-emerald-600/90 hover:bg-emerald-500 text-white border-emerald-400 font-semibold'
+            }`}
+          >
+            {isPreviewActive ? (
+              <>
+                <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Masquer 3D</span>
+              </>
+            ) : (
+              <>
+                <Eye className="w-3.5 h-3.5 text-white" />
+                <span>Activer 3D</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleSwap}
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono flex items-center gap-1.5 transition-colors border border-zinc-700/60 shrink-0"
+          >
+            <ArrowLeftRight className="w-3.5 h-3.5 text-sky-400" />
+            <span>Swap Viewports</span>
+          </button>
+        </div>
       </div>
 
       {/* Side-by-side Viewports Grid */}
@@ -122,14 +161,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
             className="relative w-full h-[300px] sm:h-[450px] bg-black"
             style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
           >
-            {isModalOpen ? (
-              <img
-                src={leftPosterUrl}
-                alt={leftSplat.title}
-                className="w-full h-full object-cover select-none"
-                loading="lazy"
-              />
-            ) : (
+            {isPreviewActive && !isModalOpen ? (
               <iframe
                 key={leftKey}
                 src={getCleanPreviewUrl(leftSplat.url)}
@@ -139,6 +171,30 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
                 className="w-full h-full border-0 block"
                 style={{ transform: 'translateZ(0)' }}
               />
+            ) : (
+              <div className="relative w-full h-full">
+                <img
+                  src={leftPosterUrl}
+                  alt={leftSplat.title}
+                  className="w-full h-full object-cover select-none"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.includes('/v1/')) {
+                      target.src = target.src.replace('/v1/', '/v2/');
+                    } else if (target.src.includes('/v2/')) {
+                      target.src = target.src.replace('/v2/', '/v1/');
+                    }
+                  }}
+                />
+                {!isModalOpen && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-3">
+                    <span className="text-xs text-zinc-300 bg-zinc-950/80 px-2.5 py-1 rounded-full border border-zinc-700/80 font-mono">
+                      🍃 Vue 3D masquée (0% GPU)
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -198,14 +254,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
             className="relative w-full h-[300px] sm:h-[450px] bg-black"
             style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
           >
-            {isModalOpen ? (
-              <img
-                src={rightPosterUrl}
-                alt={rightSplat.title}
-                className="w-full h-full object-cover select-none"
-                loading="lazy"
-              />
-            ) : (
+            {isPreviewActive && !isModalOpen ? (
               <iframe
                 key={rightKey}
                 src={getCleanPreviewUrl(rightSplat.url)}
@@ -215,6 +264,30 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
                 className="w-full h-full border-0 block"
                 style={{ transform: 'translateZ(0)' }}
               />
+            ) : (
+              <div className="relative w-full h-full">
+                <img
+                  src={rightPosterUrl}
+                  alt={rightSplat.title}
+                  className="w-full h-full object-cover select-none"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.includes('/v1/')) {
+                      target.src = target.src.replace('/v1/', '/v2/');
+                    } else if (target.src.includes('/v2/')) {
+                      target.src = target.src.replace('/v2/', '/v1/');
+                    }
+                  }}
+                />
+                {!isModalOpen && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-3">
+                    <span className="text-xs text-zinc-300 bg-zinc-950/80 px-2.5 py-1 rounded-full border border-zinc-700/80 font-mono">
+                      🍃 Vue 3D masquée (0% GPU)
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

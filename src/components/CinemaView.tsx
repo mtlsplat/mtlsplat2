@@ -6,10 +6,12 @@ import {
   Code, 
   HelpCircle,
   Eye, 
+  EyeOff,
   Layers, 
   Sliders
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
+import { getSplatPosterUrl } from '../data/defaultSplats';
 
 interface CinemaViewProps {
   splats: SplatItem[];
@@ -19,6 +21,7 @@ interface CinemaViewProps {
   onOpenEmbed: (splat: SplatItem) => void;
   onOpenGuide: () => void;
   isModalOpen?: boolean;
+  is3DPreviewEnabled?: boolean;
 }
 
 export const CinemaView: React.FC<CinemaViewProps> = ({
@@ -29,12 +32,20 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   onOpenEmbed,
   onOpenGuide,
   isModalOpen = false,
+  is3DPreviewEnabled = true,
 }) => {
   const currentSplat = splats.find((s) => s.id === selectedId) || splats[0];
   const [iframeKey, setIframeKey] = useState(0);
+  const [localOverride, setLocalOverride] = useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    setLocalOverride(null);
+  }, [is3DPreviewEnabled, selectedId]);
+
+  const isPreviewActive = localOverride !== null ? localOverride : is3DPreviewEnabled;
 
   // High-res WebP poster
-  const posterUrl = currentSplat ? `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${currentSplat.supersplatId}/v1/xl.webp` : '';
+  const posterUrl = currentSplat ? getSplatPosterUrl(currentSplat) : '';
 
   // Stage preview: clean view without UI clutter, with live animation running
   const stageUrl = React.useMemo(() => {
@@ -67,6 +78,33 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Masquer / Démasquer Preview 3D */}
+            <button
+              onClick={() => setLocalOverride(!isPreviewActive)}
+              title={
+                isPreviewActive
+                  ? 'Masquer le preview 3D pour alléger (Mode Éco)'
+                  : 'Démasquer le preview 3D interactif'
+              }
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5 border ${
+                isPreviewActive
+                  ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 border-transparent'
+                  : 'bg-emerald-600/90 hover:bg-emerald-500 border-emerald-400 text-white font-medium'
+              }`}
+            >
+              {isPreviewActive ? (
+                <>
+                  <EyeOff className="w-4 h-4 text-amber-400" />
+                  <span className="hidden md:inline">Masquer 3D</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4 text-white" />
+                  <span className="hidden md:inline">Activer 3D</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={onOpenGuide}
               title="Camera Navigation Guide"
@@ -119,14 +157,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
           className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black"
           style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
         >
-          {isModalOpen ? (
-            <img
-              src={posterUrl}
-              alt={currentSplat.title}
-              className="w-full h-full object-cover select-none"
-              loading="lazy"
-            />
-          ) : (
+          {isPreviewActive && !isModalOpen ? (
             <iframe
               key={iframeKey}
               src={stageUrl}
@@ -136,6 +167,39 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
               className="w-full h-full border-0 select-none block"
               style={{ transform: 'translateZ(0)' }}
             />
+          ) : (
+            <div className="relative w-full h-full">
+              <img
+                src={posterUrl}
+                alt={currentSplat.title}
+                className="w-full h-full object-cover select-none"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src.includes('/v1/')) {
+                    target.src = target.src.replace('/v1/', '/v2/');
+                  } else if (target.src.includes('/v2/')) {
+                    target.src = target.src.replace('/v2/', '/v1/');
+                  }
+                }}
+              />
+              {!isModalOpen && (
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-4">
+                  <div className="flex flex-col items-center gap-3 text-center max-w-sm">
+                    <button
+                      onClick={() => setLocalOverride(true)}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg transition-transform hover:scale-105"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>Charger la scène 3D temps réel</span>
+                    </button>
+                    <p className="text-xs text-zinc-300">
+                      Prévisualisation masquée pour économiser les ressources (0% GPU).
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

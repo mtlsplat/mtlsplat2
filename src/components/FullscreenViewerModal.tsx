@@ -7,9 +7,13 @@ import {
   ExternalLink, 
   Code, 
   HelpCircle,
-  Sparkles
+  Sparkles,
+  SlidersHorizontal,
+  Play,
+  Pause
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
+import { getSplatPosterUrl } from '../data/defaultSplats';
 
 interface FullscreenViewerModalProps {
   splat: SplatItem | null;
@@ -71,11 +75,30 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
     setIframeKey((prev) => prev + 1);
   };
 
-  // Fullscreen view: keep navigation controls (drone, marche, pivot) fully enabled, live animation running
+  // Fullscreen view: hide internal SuperSplat UI / "Play animation" button with &noui by default
+  const [showNativeUi, setShowNativeUi] = useState(false);
+  const [isPlayingAnim, setIsPlayingAnim] = useState(true);
+
   const fullscreenUrl = React.useMemo(() => {
     if (!splat) return '';
-    return splat.url.replace(/[?&]noui/g, '').replace(/[?&]noanim/g, '');
-  }, [splat]);
+    let url = splat.url;
+    if (!isPlayingAnim) {
+      if (!url.includes('noanim')) {
+        url = url.includes('?') ? `${url}&noanim` : `${url}?noanim`;
+      }
+    } else {
+      url = url.replace(/[?&]noanim/g, '');
+    }
+
+    if (!showNativeUi) {
+      if (!url.includes('noui')) {
+        url = url.includes('?') ? `${url}&noui` : `${url}?noui`;
+      }
+    } else {
+      url = url.replace(/[?&]noui/g, '');
+    }
+    return url;
+  }, [splat, showNativeUi, isPlayingAnim]);
 
   if (!isOpen || !splat) return null;
 
@@ -113,6 +136,46 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
 
           {/* Action buttons */}
           <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+            {/* Camera Animation Play/Pause Toggle */}
+            <button
+              onClick={() => setIsPlayingAnim((prev) => !prev)}
+              title={
+                isPlayingAnim 
+                  ? "Mettre l'animation caméra en pause (Orbite libre à la souris, sans à-coups)" 
+                  : "Relancer l'animation automatique de la caméra"
+              }
+              className={`p-1.5 md:px-2.5 md:py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5 ${
+                isPlayingAnim
+                  ? 'text-sky-300 hover:text-sky-200 bg-sky-500/10 border border-sky-500/20'
+                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 border border-transparent'
+              }`}
+            >
+              {isPlayingAnim ? (
+                <>
+                  <Pause className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="hidden md:inline">Pause Caméra</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="hidden md:inline">Play Caméra</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setShowNativeUi((prev) => !prev)}
+              title={showNativeUi ? "Clean View: Hide SuperSplat internal UI & Play button" : "Show SuperSplat native UI overlay"}
+              className={`p-1.5 md:px-2.5 md:py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5 ${
+                showNativeUi 
+                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' 
+                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              <span className="hidden md:inline">{showNativeUi ? 'Native UI' : 'Clean View'}</span>
+            </button>
+
             <button
               onClick={onOpenGuide}
               title="Controls Guide"
@@ -177,7 +240,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
           {/* Background poster while 3D engine loads */}
           <div 
             className="absolute inset-0 bg-cover bg-center -z-10 bg-zinc-950"
-            style={{ backgroundImage: `url(https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${splat.supersplatId}/v1/xl.webp)` }}
+            style={{ backgroundImage: `url(${getSplatPosterUrl(splat)})` }}
           />
 
           <iframe

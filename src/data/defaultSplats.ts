@@ -7,9 +7,10 @@ export const DEFAULT_SPLATS: SplatItem[] = [
     title: 'MOTO',
     description: 'Detailed 3D Gaussian Splat reconstruction of a motorcycle, capturing metallic frame reflections, engine block mechanics, handlebars, wheels, and surrounding ground surface with real-time volumetric radiance.',
     url: 'https://superspl.at/s?id=300fa8ae',
+    posterUrl: 'https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/300fa8ae/v2/xl.webp',
     category: 'Motorcycle',
-    splatCount: '~1.4M splats',
-    captureNotes: 'Optimized radiance field, XR-spatial tracking enabled',
+    splatCount: '~1.87M splats (Haute densité)',
+    captureNotes: '1.87M radiance field (sans LOD), XR-spatial tracking enabled',
     createdAt: '2026-03-12',
     isUserOriginal: true,
   },
@@ -19,13 +20,23 @@ export const DEFAULT_SPLATS: SplatItem[] = [
     title: 'MTB',
     description: 'High-resolution mountain bike (MTB) spatial reconstruction showcasing front suspension forks, frame geometry, knobby tread tires, drivetrain components, and natural outdoor depth in full 6-DoF.',
     url: 'https://superspl.at/s?id=374399b7',
+    posterUrl: 'https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/374399b7/v1/xl.webp',
     category: 'Mountain Bike',
-    splatCount: '~980K splats',
-    captureNotes: 'Real-time WebGL rendering via SuperSplat engine',
+    splatCount: '~980K splats (Streaming LOD)',
+    captureNotes: 'Optimisé PlayCanvas LOD temps réel',
     createdAt: '2026-03-20',
     isUserOriginal: true,
   },
 ];
+
+export function getSplatPosterUrl(splat: SplatItem): string {
+  if (splat.posterUrl) return splat.posterUrl;
+  // MOTO v2 snapshot on PlayCanvas S3
+  if (splat.supersplatId === '300fa8ae') {
+    return 'https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/300fa8ae/v2/xl.webp';
+  }
+  return `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${splat.supersplatId}/v1/xl.webp`;
+}
 
 export function extractSupersplatId(input: string): { id: string; url: string } | null {
   const trimmed = input.trim();

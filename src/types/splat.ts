@@ -4,6 +4,7 @@ export interface SplatItem {
   title: string;
   description: string;
   url: string; // Full URL https://superspl.at/s?id=...
+  posterUrl?: string; // Preview snapshot image
   category: string;
   splatCount?: string;
   captureNotes?: string;

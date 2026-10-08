@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { SplatItem, ViewMode } from './types/splat';
 import { DEFAULT_SPLATS } from './data/defaultSplats';
+import { soundtrack } from './services/soundtrackService';
 import { Navbar } from './components/Navbar';
 import { SplatCard } from './components/SplatCard';
 import { DualCompareView } from './components/DualCompareView';
@@ -22,6 +23,7 @@ import {
   Columns, 
   Compass, 
   Eye, 
+  EyeOff,
   Radio, 
   ExternalLink 
 } from 'lucide-react';
@@ -36,6 +38,17 @@ const restoreLiveAnimation = (item: SplatItem): SplatItem => {
   return item;
 };
 
+const mergeWithDefaults = (item: SplatItem): SplatItem => {
+  const cleanItem = restoreLiveAnimation(item);
+  if (cleanItem.isUserOriginal) {
+    const match = DEFAULT_SPLATS.find((d) => d.id === cleanItem.id || d.supersplatId === cleanItem.supersplatId);
+    if (match) {
+      return { ...match, ...cleanItem, posterUrl: match.posterUrl, splatCount: match.splatCount };
+    }
+  }
+  return cleanItem;
+};
+
 export default function App() {
   const [splats, setSplats] = useState<SplatItem[]>(() => {
     try {
@@ -43,7 +56,7 @@ export default function App() {
       if (savedV5) {
         const parsed = JSON.parse(savedV5);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(restoreLiveAnimation);
+          return parsed.map(mergeWithDefaults);
         }
       }
 
@@ -51,7 +64,7 @@ export default function App() {
       if (savedV4) {
         const parsedV4 = JSON.parse(savedV4);
         if (Array.isArray(parsedV4) && parsedV4.length > 0) {
-          return parsedV4.map(restoreLiveAnimation);
+          return parsedV4.map(mergeWithDefaults);
         }
       }
 
@@ -59,7 +72,7 @@ export default function App() {
       if (savedV3) {
         const parsedV3 = JSON.parse(savedV3);
         if (Array.isArray(parsedV3) && parsedV3.length > 0) {
-          return parsedV3.map(restoreLiveAnimation);
+          return parsedV3.map(mergeWithDefaults);
         }
       }
 
@@ -67,7 +80,7 @@ export default function App() {
       if (savedV2) {
         const parsedV2 = JSON.parse(savedV2);
         if (Array.isArray(parsedV2) && parsedV2.length > 0) {
-          return parsedV2.map(restoreLiveAnimation);
+          return parsedV2.map(mergeWithDefaults);
         }
       }
 
@@ -76,7 +89,7 @@ export default function App() {
         const parsedV1 = JSON.parse(savedV1);
         if (Array.isArray(parsedV1)) {
           const customOnly = parsedV1.filter((s: SplatItem) => !s.isUserOriginal);
-          return [...DEFAULT_SPLATS, ...customOnly.map(restoreLiveAnimation)];
+          return [...DEFAULT_SPLATS, ...customOnly.map(mergeWithDefaults)];
         }
       }
     } catch (e) {
@@ -97,6 +110,58 @@ export default function App() {
   
   // Cinema view selected ID
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
+
+  // Ambient soundtrack state
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  // 3D Preview Active State (User can toggle off to reduce GPU load on low-spec PCs)
+  const [is3DPreviewEnabled, setIs3DPreviewEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('mtlsplat_preview_enabled');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+    } catch {
+      // default
+    }
+    return true;
+  });
+
+  const handleToggle3DPreview = () => {
+    setIs3DPreviewEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('mtlsplat_preview_enabled', String(next));
+      } catch {
+        // ignore storage error
+      }
+      return next;
+    });
+  };
+
+  const handleToggleAudio = () => {
+    const next = soundtrack.toggle();
+    setIsPlayingAudio(next);
+  };
+
+  // Attempt auto-start ambient music on first user gesture (satisfying browser autoplay policy)
+  useEffect(() => {
+    const handleFirstGesture = () => {
+      soundtrack.start().then((started) => {
+        if (started) setIsPlayingAudio(true);
+      });
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+
+    window.addEventListener('pointerdown', handleFirstGesture);
+    window.addEventListener('keydown', handleFirstGesture);
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+  }, []);
 
   // Save to localStorage whenever splats change
   useEffect(() => {
@@ -157,6 +222,10 @@ export default function App() {
           onOpenGuide={() => setIsGuideOpen(true)}
           onResetDefaults={hasCustomSplats ? handleResetDefaults : undefined}
           hasCustomSplats={hasCustomSplats}
+          isPlayingAudio={isPlayingAudio}
+          onToggleAudio={handleToggleAudio}
+          is3DPreviewEnabled={is3DPreviewEnabled}
+          onToggle3DPreview={handleToggle3DPreview}
         />
 
         {/* Hero Banner Area */}
@@ -243,6 +312,51 @@ export default function App() {
           {/* VIEW MODE 1: GRID VIEW */}
           {viewMode === 'grid' && (
             <div>
+              {/* Performance & Eco Mode Control Banner */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-3 sm:px-4 sm:py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs shadow-sm">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    is3DPreviewEnabled ? 'bg-sky-400' : 'bg-emerald-400'
+                  }`} />
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0 truncate">
+                    <span className="font-semibold text-zinc-100 truncate">
+                      {is3DPreviewEnabled ? 'Previews 3D Temps Réel Actives' : 'Mode Léger Actif (Previews Masquées)'}
+                    </span>
+                    <span className="text-zinc-400 text-[11px] truncate">
+                      {is3DPreviewEnabled 
+                        ? '6-DoF WebGL · Consomme des ressources GPU' 
+                        : '0% de charge GPU · Idéal pour alléger les ordinateurs plus lents'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleToggle3DPreview}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 border shrink-0 ${
+                    is3DPreviewEnabled
+                      ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 font-semibold'
+                  }`}
+                  title={
+                    is3DPreviewEnabled 
+                      ? 'Masquer les previews 3D pour alléger votre machine' 
+                      : 'Démasquer les previews 3D interactives'
+                  }
+                >
+                  {is3DPreviewEnabled ? (
+                    <>
+                      <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Masquer les previews (Alléger)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3.5 h-3.5 text-white" />
+                      <span>Démasquer les previews 3D</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               {filteredSplats.length === 0 ? (
                 <div className="text-center py-20 border border-dashed border-zinc-800 rounded-2xl bg-zinc-950/40">
                   <Compass className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
@@ -267,6 +381,7 @@ export default function App() {
                       key={splat.id}
                       splat={splat}
                       isModalOpen={!!modalSplat}
+                      globalPreviewEnabled={is3DPreviewEnabled}
                       onExplore={(s) => setModalSplat(s)}
                       onEmbed={(s) => setEmbedSplat(s)}
                       onCompareSelect={(s) => {
@@ -290,6 +405,7 @@ export default function App() {
               onOpenEmbed={(s) => setEmbedSplat(s)}
               onOpenGuide={() => setIsGuideOpen(true)}
               isModalOpen={!!modalSplat}
+              is3DPreviewEnabled={is3DPreviewEnabled}
             />
           )}
 
@@ -300,6 +416,7 @@ export default function App() {
               onOpenExplore={(s) => setModalSplat(s)}
               onOpenEmbed={(s) => setEmbedSplat(s)}
               isModalOpen={!!modalSplat}
+              is3DPreviewEnabled={is3DPreviewEnabled}
             />
           )}
         </main>
