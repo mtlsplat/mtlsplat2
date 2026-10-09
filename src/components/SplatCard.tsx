@@ -31,12 +31,16 @@ export const SplatCard: React.FC<SplatCardProps> = ({
   isModalOpen = false,
   globalPreviewEnabled = false,
 }) => {
-  const [isInteractive, setIsInteractive] = useState(false);
+  // Directly interactive when preview is activated as requested
+  const [isInteractive, setIsInteractive] = useState(true);
   const [localOverride, setLocalOverride] = useState<boolean | null>(null);
 
-  // Reset local override when the global setting flips
+  // Reset local override when the global setting flips, ensure interactive is true when preview turns on
   useEffect(() => {
     setLocalOverride(null);
+    if (globalPreviewEnabled) {
+      setIsInteractive(true);
+    }
   }, [globalPreviewEnabled]);
 
   // Preview is off by default as requested
@@ -57,6 +61,7 @@ export const SplatCard: React.FC<SplatCardProps> = ({
   const handleActivatePreview = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setLocalOverride(true);
+    setIsInteractive(true);
   };
 
   const handleDeactivatePreview = (e?: React.MouseEvent) => {
@@ -92,13 +97,17 @@ export const SplatCard: React.FC<SplatCardProps> = ({
               style={{ transform: 'translateZ(0)' }}
             />
 
-            {/* Direct click to open fullscreen when active and not in orbit lock mode */}
+            {/* Direct click to resume orbit if user manually locked it */}
             {!isInteractive && (
               <div
-                onClick={() => onExplore(splat)}
-                className="absolute inset-0 z-10 cursor-pointer"
-                title="Cliquer pour afficher en plein écran"
-              />
+                onClick={() => setIsInteractive(true)}
+                className="absolute inset-0 z-10 cursor-pointer bg-black/10 flex items-center justify-center p-3"
+                title="Cliquer pour réactiver l'orbite 3D"
+              >
+                <div className="bg-white border border-black px-2.5 py-1 text-[11px] font-mono uppercase tracking-wider text-black shadow-[2px_2px_0px_#000000]">
+                  ORBITE EN PAUSE · CLIQUER POUR ACTIVER
+                </div>
+              </div>
             )}
           </>
         ) : (
@@ -170,7 +179,7 @@ export const SplatCard: React.FC<SplatCardProps> = ({
                 e.stopPropagation();
                 setIsInteractive(!isInteractive);
               }}
-              title={isInteractive ? 'Verrouiller orbite' : 'Activer orbite directe sur la carte'}
+              title={isInteractive ? 'Mettre en pause l\'orbite tactile/souris' : 'Activer orbite directe sur la carte'}
               className={`px-2 py-1 border border-black text-[11px] font-mono uppercase tracking-wider transition-colors flex items-center gap-1 shadow-[2px_2px_0px_#000000] ${
                 isInteractive 
                   ? 'bg-black text-white'
@@ -178,7 +187,22 @@ export const SplatCard: React.FC<SplatCardProps> = ({
               }`}
             >
               <MousePointer className="w-3 h-3" />
-              <span>{isInteractive ? 'ACTIF' : 'ORBITE'}</span>
+              <span>{isInteractive ? '3D ACTIF' : 'ORBITE OFF'}</span>
+            </button>
+          )}
+
+          {/* Quick Fullscreen button when preview is active */}
+          {isPreviewActive && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onExplore(splat);
+              }}
+              title="Afficher en plein écran"
+              className="p-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000]"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
             </button>
           )}
 

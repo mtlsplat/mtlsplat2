@@ -105,8 +105,8 @@ export default function App() {
   // Cinema view selected ID
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
 
-  // Ambient soundtrack state
-  const [isPlayingAudio, setIsPlayingAudio] = useState(() => soundtrack.getIsPlaying());
+  // Ambient soundtrack state (ON by default on page open)
+  const [isPlayingAudio, setIsPlayingAudio] = useState(() => soundtrack.getIsDesiredPlaying());
 
   // 3D Preview Active State: OFF BY DEFAULT as explicitly requested
   const [is3DPreviewEnabled, setIs3DPreviewEnabled] = useState<boolean>(() => {

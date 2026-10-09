@@ -5,7 +5,7 @@ type AudioStateListener = (isPlaying: boolean) => void;
 
 class SoundtrackManager {
   private ctx: AudioContext | null = null;
-  private isDesiredPlaying = true; // Enabled by default as requested
+  private isDesiredPlaying = true; // Always ON by default on page open
   private isChordCycleRunning = false;
   private masterGain: GainNode | null = null;
   private intervalId: number | null = null;
@@ -23,29 +23,20 @@ class SoundtrackManager {
   private currentChordIndex = 0;
 
   constructor() {
-    // Check if user previously saved sound preference
-    try {
-      const saved = localStorage.getItem('mtlsplat_audio_enabled');
-      if (saved !== null) {
-        this.isDesiredPlaying = saved === 'true';
-      } else {
-        this.isDesiredPlaying = true; // ON by default!
-      }
-    } catch {
-      this.isDesiredPlaying = true;
-    }
+    // Music is enabled by default on page open
+    this.isDesiredPlaying = true;
   }
 
   public subscribe(listener: AudioStateListener): () => void {
     this.listeners.add(listener);
-    listener(this.getIsPlaying());
+    listener(this.isDesiredPlaying);
     return () => {
       this.listeners.delete(listener);
     };
   }
 
   private notifyListeners() {
-    const active = this.getIsPlaying();
+    const active = this.isDesiredPlaying;
     this.listeners.forEach((listener) => {
       try {
         listener(active);
@@ -114,14 +105,14 @@ class SoundtrackManager {
     };
 
     const removeUnlockListeners = () => {
-      ['pointerdown', 'mousedown', 'keydown', 'touchstart', 'click'].forEach((event) => {
+      ['pointerdown', 'mousedown', 'keydown', 'touchstart', 'click', 'scroll', 'wheel'].forEach((event) => {
         window.removeEventListener(event, unlockHandler);
         document.removeEventListener(event, unlockHandler);
       });
       this.unlockListenersAttached = false;
     };
 
-    ['pointerdown', 'mousedown', 'keydown', 'touchstart', 'click'].forEach((event) => {
+    ['pointerdown', 'mousedown', 'keydown', 'touchstart', 'click', 'scroll', 'wheel'].forEach((event) => {
       window.addEventListener(event, unlockHandler, { passive: true });
       document.addEventListener(event, unlockHandler, { passive: true });
     });
@@ -148,13 +139,13 @@ class SoundtrackManager {
 
       if (ctx.state === 'running') {
         this.startChordCycle();
+        this.notifyListeners();
         return true;
       }
     } catch (e) {
       console.warn('Autoplay suspended by browser, waiting for user gesture', e);
     }
 
-    // Audio will start automatically as soon as user clicks or keys
     this.notifyListeners();
     return false;
   }
@@ -169,7 +160,12 @@ class SoundtrackManager {
     }
 
     this.isChordCycleRunning = true;
-    this.masterGain.gain.setValueAtTime(0.20, this.ctx.currentTime);
+    try {
+      this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(0.20, this.ctx.currentTime);
+    } catch {
+      // ignore
+    }
 
     // Play first chord immediately
     this.playAmbientChordCycle();
