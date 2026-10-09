@@ -66,10 +66,10 @@ export const SplatCard: React.FC<SplatCardProps> = ({
   };
 
   return (
-    <article className="bg-white border border-black flex flex-col w-full max-w-full text-black">
+    <article className="relative z-10 bg-white border border-black flex flex-col w-full max-w-full text-black shadow-[4px_4px_0px_#000000]">
       {/* 3D Viewport Box (Square format 1:1, Hardware Accelerated, Black Border) */}
       <div 
-        className="relative w-full aspect-square bg-zinc-100 border-b border-black overflow-hidden select-none"
+        className="relative z-10 w-full aspect-square bg-zinc-100 border-b border-black overflow-hidden select-none"
         style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
       >
         {/* Background poster while loading */}
@@ -202,7 +202,7 @@ export const SplatCard: React.FC<SplatCardProps> = ({
           {/* Metadata Kicker Strip */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono uppercase tracking-widest text-black/60 pb-2 border-b border-black/10 mb-3">
             <span className="font-bold text-black border border-black px-1.5 py-0.5">
-              {splat.category}
+              3DGS · RADIANCE
             </span>
             <div className="flex items-center gap-2">
               <span>{splat.splatCount || '1M RADIANCE'}</span>

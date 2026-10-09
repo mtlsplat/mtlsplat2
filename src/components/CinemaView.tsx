@@ -58,7 +58,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   if (!currentSplat) return null;
 
   return (
-    <div className="space-y-4 w-full max-w-full overflow-hidden text-black">
+    <div className="relative z-10 space-y-4 w-full max-w-full overflow-hidden text-black">
       {/* Primary Cinema Viewport Stage (Black Border, Brutalist Header) */}
       <div className="relative w-full bg-white border border-black shadow-[4px_4px_0px_#000000] overflow-hidden flex flex-col">
         {/* Cinema Stage Header */}
@@ -210,7 +210,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
         {/* Technical Details Strip */}
         <div className="p-3 sm:p-4 bg-white border-t border-black flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3 text-black font-mono">
-            <span className="font-bold border border-black px-1.5 py-0.5">{currentSplat.category}</span>
+            <span className="font-bold border border-black px-1.5 py-0.5">ARCHIVE 3DGS</span>
             <span>·</span>
             <span>{currentSplat.splatCount || '1M splats'}</span>
             <span>·</span>
@@ -258,7 +258,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
                 <p className={`text-[10px] font-mono uppercase truncate mt-0.5 ${
                   isSelected ? 'text-white/70' : 'text-black/50'
                 }`}>
-                  {splat.category}
+                  {splat.splatCount || '1M RADIANCE'}
                 </p>
               </button>
             );

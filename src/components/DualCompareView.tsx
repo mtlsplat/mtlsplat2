@@ -59,7 +59,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
   }
 
   return (
-    <div className="space-y-4 w-full max-w-full overflow-hidden text-black">
+    <div className="relative z-10 space-y-4 w-full max-w-full overflow-hidden text-black">
       {/* Compare Control Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 bg-white border border-black shadow-[4px_4px_0px_#000000] w-full overflow-hidden">
         <div className="flex items-center gap-3 min-w-0">
@@ -203,7 +203,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
 
           {/* Footer Metadata */}
           <div className="p-3 text-xs text-black flex items-center justify-between bg-white border-t border-black font-mono">
-            <span className="truncate">{leftSplat.category} · {leftSplat.splatCount || 'N/A'}</span>
+            <span className="truncate">{leftSplat.splatCount || '1M RADIANCE'} · 6-DOF</span>
             <span className="text-black/60 shrink-0 ml-2">ID: {leftSplat.supersplatId}</span>
           </div>
         </div>
@@ -299,7 +299,7 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
 
           {/* Footer Metadata */}
           <div className="p-3 text-xs text-black flex items-center justify-between bg-white border-t border-black font-mono">
-            <span className="truncate">{rightSplat.category} · {rightSplat.splatCount || 'N/A'}</span>
+            <span className="truncate">{rightSplat.splatCount || '1M RADIANCE'} · 6-DOF</span>
             <span className="text-black/60 shrink-0 ml-2">ID: {rightSplat.supersplatId}</span>
           </div>
         </div>

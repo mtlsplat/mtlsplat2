@@ -15,6 +15,7 @@ import { FullscreenViewerModal } from './components/FullscreenViewerModal';
 import { EmbedCodeModal } from './components/EmbedCodeModal';
 import { AddSplatModal } from './components/AddSplatModal';
 import { ControlsGuideModal } from './components/ControlsGuideModal';
+import { MouseGradient } from './components/MouseGradient';
 import { 
   Eye, 
   EyeOff, 
@@ -94,7 +95,6 @@ export default function App() {
 
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
   // Modals state
   const [modalSplat, setModalSplat] = useState<SplatItem | null>(null);
@@ -183,27 +183,24 @@ export default function App() {
     }
   };
 
-  // Categories list
-  const categories = ['All', ...Array.from(new Set(splats.map((s) => s.category)))];
-
-  // Filtered splats
+  // Filtered splats based on search query
   const filteredSplats = splats.filter((splat) => {
-    const matchesSearch = 
+    return (
       splat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       splat.supersplatId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      splat.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      splat.category.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesCategory = selectedCategory === 'All' || splat.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+      splat.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   });
 
   const hasCustomSplats = splats.some((s) => !s.isUserOriginal);
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col selection:bg-black selection:text-white w-full max-w-full overflow-x-hidden relative font-sans">
+      {/* Round Black Gradient Effect tracking mouse cursor across the page canvas (z-0, never over UI boxes or splat previews) */}
+      <MouseGradient />
+
       {/* Underlying Page Content (Automatically blurred when fullscreen modal is in foreground) */}
-      <div className={`flex flex-col flex-1 w-full transition-all duration-300 ${
+      <div className={`flex flex-col flex-1 w-full transition-all duration-300 relative z-10 ${
         modalSplat ? 'filter blur-md brightness-75 scale-[0.99] origin-center pointer-events-none select-none' : ''
       }`}>
         {/* Top Navbar */}
@@ -223,7 +220,7 @@ export default function App() {
         />
 
         {/* Hero Banner: Minimalist Brutalist Typography & Montreal Spatial Archive Context */}
-        <section className="relative border-b border-black bg-white w-full overflow-hidden">
+        <section className="relative border-b border-black bg-transparent w-full overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full overflow-hidden">
             {/* Top Technical Kicker */}
             <div className="flex items-center justify-between border-b border-black pb-3 mb-6 text-xs font-mono uppercase tracking-widest text-black/70">
@@ -251,23 +248,23 @@ export default function App() {
 
                 {/* Technical Meta Tags */}
                 <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] font-mono uppercase">
-                  <span className="border border-black px-2.5 py-1 text-black font-bold">
+                  <span className="border border-black px-2.5 py-1 text-black font-bold bg-white relative z-10">
                     📍 MONTRÉAL (QC)
                   </span>
-                  <span className="border border-black px-2.5 py-1 text-black">
+                  <span className="border border-black px-2.5 py-1 text-black bg-white relative z-10">
                     🔬 3D GAUSSIAN SPLATTING
                   </span>
-                  <span className="border border-black px-2.5 py-1 text-black">
+                  <span className="border border-black px-2.5 py-1 text-black bg-white relative z-10">
                     ⚡ WEBGL 6-DOF STREAMING
                   </span>
-                  <span className="border border-black px-2.5 py-1 text-black">
+                  <span className="border border-black px-2.5 py-1 text-black bg-white relative z-10">
                     🍃 PRÉVIEWS ALLÉGÉES PAR DÉFAUT
                   </span>
                 </div>
               </div>
 
               {/* Brutalist KPI / Metrics Block */}
-              <div className="border border-black p-4 sm:p-5 bg-zinc-50 flex flex-col justify-between gap-4 shrink-0 lg:w-72 shadow-[4px_4px_0px_#000000]">
+              <div className="border border-black p-4 sm:p-5 bg-zinc-50 flex flex-col justify-between gap-4 shrink-0 lg:w-72 shadow-[4px_4px_0px_#000000] relative z-10">
                 <div>
                   <span className="text-[10px] font-mono uppercase text-black/60 block">SCÈNES NUMÉRISÉES</span>
                   <span className="text-3xl sm:text-4xl font-black font-mono text-black">{splats.length}</span>
@@ -291,26 +288,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-
-            {/* Category Filter Bar */}
-            {categories.length > 2 && (
-              <div className="mt-8 pt-4 border-t border-black flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-                <span className="text-xs font-mono uppercase text-black/60 mr-2 shrink-0 font-bold">FILTRE :</span>
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 border border-black ${
-                      selectedCategory === cat
-                        ? 'bg-black text-white shadow-[2px_2px_0px_#000000]'
-                        : 'bg-white text-black hover:bg-black hover:text-white'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </section>
 
@@ -369,16 +346,15 @@ export default function App() {
                   <Compass className="w-10 h-10 text-black mx-auto mb-3" />
                   <h3 className="text-sm font-black uppercase text-black font-mono">Aucun Gaussian Splat trouvé</h3>
                   <p className="text-xs text-zinc-600 mt-1 max-w-sm mx-auto font-sans">
-                    Modifiez vos termes de recherche ou réinitialisez le filtre de catégorie.
+                    Modifiez vos termes de recherche pour afficher les captures 3D.
                   </p>
                   <button
                     onClick={() => {
                       setSearchQuery('');
-                      setSelectedCategory('All');
                     }}
                     className="mt-4 px-4 py-2 text-xs font-mono uppercase tracking-wider bg-black hover:bg-zinc-800 text-white border border-black transition-colors"
                   >
-                    Effacer les filtres
+                    Effacer la recherche
                   </button>
                 </div>
               ) : (
