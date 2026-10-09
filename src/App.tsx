@@ -106,7 +106,7 @@ export default function App() {
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
 
   // Ambient soundtrack state
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(() => soundtrack.getIsPlaying());
 
   // 3D Preview Active State: OFF BY DEFAULT as explicitly requested
   const [is3DPreviewEnabled, setIs3DPreviewEnabled] = useState<boolean>(() => {
@@ -134,26 +134,20 @@ export default function App() {
   };
 
   const handleToggleAudio = () => {
-    const next = soundtrack.toggle();
-    setIsPlayingAudio(next);
+    soundtrack.toggle();
   };
 
-  // Attempt auto-start ambient music on first user gesture (satisfying browser autoplay policy)
+  // Auto-start ambient soundtrack on page open and synchronize state
   useEffect(() => {
-    const handleFirstGesture = () => {
-      soundtrack.start().then((started) => {
-        if (started) setIsPlayingAudio(true);
-      });
-      window.removeEventListener('pointerdown', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
-    };
+    const unsubscribe = soundtrack.subscribe((playing) => {
+      setIsPlayingAudio(playing);
+    });
 
-    window.addEventListener('pointerdown', handleFirstGesture);
-    window.addEventListener('keydown', handleFirstGesture);
+    // Attempt to play music immediately when page opens
+    soundtrack.start();
 
     return () => {
-      window.removeEventListener('pointerdown', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
+      unsubscribe();
     };
   }, []);
 
