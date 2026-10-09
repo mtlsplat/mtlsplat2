@@ -3,12 +3,13 @@
 html,
 body {
   background-color: #ffffff;
-  color: #18181b;
+  color: #000000;
   overflow-x: hidden;
   max-width: 100vw;
   width: 100%;
   margin: 0;
   padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 #root {
@@ -17,4 +18,13 @@ body {
   max-width: 100vw;
   min-height: 100vh;
   background-color: #ffffff;
+  color: #000000;
 }
+
+/* Enforce strict brutalist architecture: no round corners anywhere */
+*,
+*::before,
+*::after {
+  border-radius: 0px !important;
+}
+

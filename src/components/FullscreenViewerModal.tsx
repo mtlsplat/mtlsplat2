@@ -7,7 +7,6 @@ import {
   ExternalLink, 
   Code, 
   HelpCircle,
-  Sparkles,
   SlidersHorizontal,
   Play,
   Pause
@@ -104,30 +103,30 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xl p-2 sm:p-4 md:p-6 transition-all duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 md:p-6 transition-all duration-300"
       onClick={onClose}
     >
       <div 
         ref={containerRef}
-        className="relative w-full h-full md:max-w-6xl md:h-[92vh] md:rounded-2xl bg-zinc-950 border border-zinc-700/80 shadow-[0_0_60px_rgba(0,0,0,0.9)] ring-1 ring-white/10 flex flex-col overflow-hidden text-zinc-100 z-10"
+        className="relative w-full h-full md:max-w-6xl md:h-[92vh] bg-white border-2 border-black shadow-[8px_8px_0px_#000000] flex flex-col overflow-hidden text-black z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header Bar */}
-        <div className="flex items-center justify-between px-2.5 sm:px-4 py-2.5 sm:py-3 bg-zinc-900/90 border-b border-zinc-800/80 backdrop-blur shrink-0 z-20 w-full overflow-hidden">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-b border-black shrink-0 z-20 w-full overflow-hidden">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 truncate">
-            <div className="flex items-center gap-1.5 min-w-0 truncate">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-              <h2 className="text-sm md:text-base font-semibold text-zinc-100 truncate">
+            <span className="w-2.5 h-2.5 bg-black shrink-0" />
+            <div className="flex items-center gap-2 min-w-0 truncate">
+              <h2 className="text-sm md:text-base font-black uppercase text-black truncate">
                 {splat.title}
               </h2>
             </div>
             
-            <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 font-mono shrink-0">
-              <span className="text-zinc-600">|</span>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-black/60 font-mono shrink-0">
+              <span className="text-black/30">|</span>
               <span>ID: {splat.supersplatId}</span>
               {splat.splatCount && (
                 <>
-                  <span className="text-zinc-600">·</span>
+                  <span className="text-black/30">·</span>
                   <span>{splat.splatCount}</span>
                 </>
               )}
@@ -141,100 +140,98 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
               onClick={() => setIsPlayingAnim((prev) => !prev)}
               title={
                 isPlayingAnim 
-                  ? "Mettre l'animation caméra en pause (Orbite libre à la souris, sans à-coups)" 
-                  : "Relancer l'animation automatique de la caméra"
+                  ? "Mettre la caméra en pause (Orbite manuelle)" 
+                  : "Relancer l'animation automatique"
               }
-              className={`p-1.5 md:px-2.5 md:py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5 ${
+              className={`p-1.5 md:px-2.5 md:py-1 text-xs font-mono uppercase tracking-wider border border-black transition-colors flex items-center gap-1.5 ${
                 isPlayingAnim
-                  ? 'text-sky-300 hover:text-sky-200 bg-sky-500/10 border border-sky-500/20'
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 border border-transparent'
+                  ? 'bg-black text-white'
+                  : 'bg-white text-black hover:bg-black/5'
               }`}
             >
               {isPlayingAnim ? (
                 <>
-                  <Pause className="w-3.5 h-3.5 text-sky-400" />
-                  <span className="hidden md:inline">Pause Caméra</span>
+                  <Pause className="w-3.5 h-3.5 text-white" />
+                  <span className="hidden md:inline">PAUSE</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="hidden md:inline">Play Caméra</span>
+                  <Play className="w-3.5 h-3.5 text-black" />
+                  <span className="hidden md:inline">PLAY</span>
                 </>
               )}
             </button>
 
             <button
               onClick={() => setShowNativeUi((prev) => !prev)}
-              title={showNativeUi ? "Clean View: Hide SuperSplat internal UI & Play button" : "Show SuperSplat native UI overlay"}
-              className={`p-1.5 md:px-2.5 md:py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5 ${
+              title={showNativeUi ? "Masquer UI SuperSplat" : "Afficher UI SuperSplat native"}
+              className={`p-1.5 md:px-2.5 md:py-1 text-xs font-mono uppercase tracking-wider border border-black transition-colors flex items-center gap-1.5 ${
                 showNativeUi 
-                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                  ? 'bg-black text-white' 
+                  : 'bg-white text-black hover:bg-black/5'
               }`}
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-              <span className="hidden md:inline">{showNativeUi ? 'Native UI' : 'Clean View'}</span>
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">{showNativeUi ? 'NATIVE UI' : 'CLEAN VIEW'}</span>
             </button>
 
             <button
               onClick={onOpenGuide}
-              title="Controls Guide"
-              className="p-1.5 md:px-2.5 md:py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
+              title="Guide des contrôles"
+              className="p-1.5 md:px-2.5 md:py-1 text-xs font-mono uppercase tracking-wider border border-black bg-white text-black hover:bg-black hover:text-white transition-colors flex items-center gap-1.5"
             >
-              <HelpCircle className="w-4 h-4 text-sky-400" />
-              <span className="hidden md:inline">Controls</span>
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">AIDE</span>
             </button>
 
             <button
               onClick={() => onOpenEmbed(splat)}
-              title="Copy Embed Code"
-              className="p-1.5 md:px-2.5 md:py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors hidden xs:flex items-center gap-1.5"
+              title="Code embed HTML"
+              className="p-1.5 md:px-2.5 md:py-1 text-xs font-mono uppercase tracking-wider border border-black bg-white text-black hover:bg-black hover:text-white transition-colors hidden xs:flex items-center gap-1.5"
             >
-              <Code className="w-4 h-4" />
-              <span className="hidden md:inline">Embed</span>
+              <Code className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">CODE</span>
             </button>
 
             <button
               onClick={handleReload}
-              title="Reset / Reload Viewport"
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
+              title="Recharger le viewport"
+              className="p-1.5 border border-black text-black hover:bg-black hover:text-white transition-colors"
             >
-              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
             <a
               href={splat.url}
               target="_blank"
               rel="noreferrer"
-              title="Open full scene directly on SuperSplat"
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
+              title="Ouvrir sur superspl.at"
+              className="p-1.5 border border-black text-black hover:bg-black hover:text-white transition-colors"
             >
-              <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
             <button
               onClick={toggleBrowserFullscreen}
-              title={isBrowserFullscreen ? 'Exit Fullscreen' : 'Native Fullscreen'}
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors hidden sm:block"
+              title={isBrowserFullscreen ? 'Quitter plein écran navigateur' : 'Plein écran navigateur'}
+              className="p-1.5 border border-black text-black hover:bg-black hover:text-white transition-colors hidden sm:block"
             >
-              {isBrowserFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
-
-            <div className="w-[1px] h-4 bg-zinc-800 mx-0.5 sm:mx-1" />
 
             <button
               onClick={onClose}
-              title="Close (Esc)"
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
+              title="Fermer (Échap)"
+              className="p-1.5 border border-black bg-black text-white hover:bg-zinc-800 transition-colors ml-1"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Modal Main Viewport Container */}
         <div 
-          className="relative flex-1 w-full bg-black flex items-center justify-center overflow-hidden"
+          className="relative flex-1 w-full bg-zinc-950 flex items-center justify-center overflow-hidden"
           style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
         >
           {/* Background poster while 3D engine loads */}
@@ -257,3 +254,4 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
     </div>
   );
 };
+

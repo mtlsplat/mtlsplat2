@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, MousePointer, Move, ZoomIn, Eye, Sparkles, MonitorSmartphone } from 'lucide-react';
+import { X, MousePointer, Move, ZoomIn, MonitorSmartphone } from 'lucide-react';
 
 interface ControlsGuideModalProps {
   isOpen: boolean;
@@ -15,87 +15,88 @@ export const ControlsGuideModal: React.FC<ControlsGuideModalProps> = ({ isOpen, 
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-2xl text-zinc-100"
+        className="relative w-full max-w-lg bg-white border-2 border-black p-6 shadow-[8px_8px_0px_#000000] text-black"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between pb-4 border-b border-black">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-              <Eye className="w-4 h-4" />
+            <div className="w-8 h-8 border border-black bg-black text-white flex items-center justify-center font-mono font-bold text-xs">
+              6D
             </div>
             <div>
-              <h3 className="text-base font-semibold text-zinc-100">3D Gaussian Splat Controls</h3>
-              <p className="text-xs text-zinc-400">Standard 6-DoF SuperSplat navigation guide</p>
+              <h3 className="text-base font-black uppercase tracking-tight text-black">Guide des Contrôles 3D (6-DoF)</h3>
+              <p className="text-xs font-mono text-black/60">Navigation spatiale standard SuperSplat / WebGL</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
-            aria-label="Close"
+            className="p-1 border border-black bg-white hover:bg-black hover:text-white transition-colors"
+            aria-label="Fermer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mt-5 space-y-3.5">
-          <div className="flex items-start gap-3.5 p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <div className="p-2 rounded-md bg-zinc-800 text-sky-400 shrink-0">
+        <div className="mt-5 space-y-3">
+          <div className="flex items-start gap-3.5 p-3 bg-zinc-50 border border-black">
+            <div className="p-2 border border-black bg-black text-white shrink-0">
               <MousePointer className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-sky-400 font-mono">Orbit / Rotate</span>
-              <p className="text-xs text-zinc-300 mt-0.5">
-                <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono text-[11px] border border-zinc-700">Left Click + Drag</kbd> or single finger touch drag on mobile.
+              <span className="text-xs font-bold uppercase tracking-wider text-black font-mono">Orbite / Rotation</span>
+              <p className="text-xs text-zinc-700 mt-1 font-sans">
+                <kbd className="px-1.5 py-0.5 border border-black bg-white text-black font-mono text-[11px]">Clic Gauche + Glisser</kbd> ou glissement à un doigt sur écran tactile.
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3.5 p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <div className="p-2 rounded-md bg-zinc-800 text-sky-400 shrink-0">
+          <div className="flex items-start gap-3.5 p-3 bg-zinc-50 border border-black">
+            <div className="p-2 border border-black bg-black text-white shrink-0">
               <Move className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-sky-400 font-mono">Pan / Translate</span>
-              <p className="text-xs text-zinc-300 mt-0.5">
-                <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono text-[11px] border border-zinc-700">Right Click + Drag</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono text-[11px] border border-zinc-700">Shift + Drag</kbd>, or two-finger drag.
+              <span className="text-xs font-bold uppercase tracking-wider text-black font-mono">Pan / Translation</span>
+              <p className="text-xs text-zinc-700 mt-1 font-sans">
+                <kbd className="px-1.5 py-0.5 border border-black bg-white text-black font-mono text-[11px]">Clic Droit + Glisser</kbd> ou <kbd className="px-1.5 py-0.5 border border-black bg-white text-black font-mono text-[11px]">Shift + Glisser</kbd>, ou glissement à deux doigts.
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3.5 p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <div className="p-2 rounded-md bg-zinc-800 text-sky-400 shrink-0">
+          <div className="flex items-start gap-3.5 p-3 bg-zinc-50 border border-black">
+            <div className="p-2 border border-black bg-black text-white shrink-0">
               <ZoomIn className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-sky-400 font-mono">Zoom / Depth</span>
-              <p className="text-xs text-zinc-300 mt-0.5">
-                <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono text-[11px] border border-zinc-700">Scroll Wheel</kbd> or pinch-to-zoom on touch screens.
+              <span className="text-xs font-bold uppercase tracking-wider text-black font-mono">Zoom / Profondeur</span>
+              <p className="text-xs text-zinc-700 mt-1 font-sans">
+                <kbd className="px-1.5 py-0.5 border border-black bg-white text-black font-mono text-[11px]">Molette de Défilement</kbd> ou pincement tactile (pinch-to-zoom).
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3.5 p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <div className="p-2 rounded-md bg-zinc-800 text-emerald-400 shrink-0">
+          <div className="flex items-start gap-3.5 p-3 bg-zinc-50 border border-black">
+            <div className="p-2 border border-black bg-black text-white shrink-0">
               <MonitorSmartphone className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">XR & Spatial Tracking</span>
-              <p className="text-xs text-zinc-300 mt-0.5">
-                Enabled via <code className="text-zinc-200 font-mono text-[11px]">allow="xr-spatial-tracking"</code> for WebXR headsets (Meta Quest, Apple Vision Pro via WebXR).
+              <span className="text-xs font-bold uppercase tracking-wider text-black font-mono">Immersion XR & Casques VR</span>
+              <p className="text-xs text-zinc-700 mt-1 font-sans">
+                Prise en charge native WebXR via <code className="font-mono text-[11px] border border-black px-1 bg-white">xr-spatial-tracking</code> (Meta Quest, Apple Vision Pro, etc.).
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-zinc-800 flex justify-end">
+        <div className="mt-5 pt-4 border-t border-black flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-900 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-mono uppercase tracking-wider bg-black hover:bg-zinc-800 text-white border border-black font-bold transition-colors"
           >
-            Got it
+            Fermer
           </button>
         </div>
       </div>
     </div>
   );
 };
+

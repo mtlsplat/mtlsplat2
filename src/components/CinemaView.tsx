@@ -6,9 +6,7 @@ import {
   Code, 
   HelpCircle,
   Eye, 
-  EyeOff,
-  Layers, 
-  Sliders
+  EyeOff
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 import { getSplatPosterUrl } from '../data/defaultSplats';
@@ -32,7 +30,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   onOpenEmbed,
   onOpenGuide,
   isModalOpen = false,
-  is3DPreviewEnabled = true,
+  is3DPreviewEnabled = false,
 }) => {
   const currentSplat = splats.find((s) => s.id === selectedId) || splats[0];
   const [iframeKey, setIframeKey] = useState(0);
@@ -47,7 +45,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   // High-res WebP poster
   const posterUrl = currentSplat ? getSplatPosterUrl(currentSplat) : '';
 
-  // Stage preview: clean view without UI clutter, with live animation running
+  // Stage preview: clean view without SuperSplat UI clutter (&noui), live turntable animation
   const stageUrl = React.useMemo(() => {
     if (!currentSplat) return '';
     let url = currentSplat.url.replace(/[?&]noanim/g, '');
@@ -60,17 +58,17 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   if (!currentSplat) return null;
 
   return (
-    <div className="space-y-4 w-full max-w-full overflow-hidden">
-      {/* Primary Cinema Viewport Stage */}
-      <div className="relative w-full rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl overflow-hidden flex flex-col">
+    <div className="space-y-4 w-full max-w-full overflow-hidden text-black">
+      {/* Primary Cinema Viewport Stage (Black Border, Brutalist Header) */}
+      <div className="relative w-full bg-white border border-black shadow-[4px_4px_0px_#000000] overflow-hidden flex flex-col">
         {/* Cinema Stage Header */}
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900/90 border-b border-zinc-800 backdrop-blur z-20 w-full overflow-hidden">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-b border-black z-20 w-full overflow-hidden">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 truncate">
-            <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
+            <span className="w-2.5 h-2.5 bg-black shrink-0" />
             <div className="min-w-0 truncate">
-              <h2 className="text-sm sm:text-base font-semibold text-zinc-100 flex items-center gap-2 truncate">
+              <h2 className="text-sm sm:text-base font-black uppercase text-black flex items-center gap-2 truncate">
                 <span className="truncate">{currentSplat.title}</span>
-                <span className="text-xs font-mono font-normal text-zinc-400 hidden sm:inline shrink-0">
+                <span className="text-xs font-mono font-normal text-black/60 hidden sm:inline shrink-0">
                   [{currentSplat.supersplatId}]
                 </span>
               </h2>
@@ -86,75 +84,78 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
                   ? 'Masquer le preview 3D pour alléger (Mode Éco)'
                   : 'Démasquer le preview 3D interactif'
               }
-              className={`p-1.5 sm:px-2.5 sm:py-1.5 text-xs rounded-lg transition-colors flex items-center gap-1.5 border ${
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-mono uppercase tracking-wider transition-colors flex items-center gap-1.5 border border-black ${
                 isPreviewActive
-                  ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 border-transparent'
-                  : 'bg-emerald-600/90 hover:bg-emerald-500 border-emerald-400 text-white font-medium'
+                  ? 'bg-black text-white hover:bg-zinc-800'
+                  : 'bg-white text-black hover:bg-black/5'
               }`}
             >
               {isPreviewActive ? (
                 <>
-                  <EyeOff className="w-4 h-4 text-amber-400" />
-                  <span className="hidden md:inline">Masquer 3D</span>
+                  <EyeOff className="w-3.5 h-3.5 text-white" />
+                  <span className="hidden md:inline">3D: ACTIF</span>
                 </>
               ) : (
                 <>
-                  <Eye className="w-4 h-4 text-white" />
-                  <span className="hidden md:inline">Activer 3D</span>
+                  <Eye className="w-3.5 h-3.5 text-black" />
+                  <span className="hidden md:inline">3D: MASQUÉ</span>
                 </>
               )}
             </button>
 
             <button
               onClick={onOpenGuide}
-              title="Camera Navigation Guide"
-              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
+              title="Guide navigation caméra"
+              className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-black hover:text-white border border-black transition-colors flex items-center gap-1"
             >
-              <HelpCircle className="w-4 h-4 text-sky-400" />
-              <span className="hidden md:inline">Controls</span>
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">AIDE</span>
             </button>
 
             <button
               onClick={() => onOpenEmbed(currentSplat)}
-              title="Embed Code"
-              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
+              title="Obtenir le code HTML Iframe"
+              className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-black hover:text-white border border-black transition-colors flex items-center gap-1"
             >
-              <Code className="w-4 h-4" />
-              <span className="hidden md:inline">Embed</span>
+              <Code className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">CODE</span>
             </button>
 
             <button
               onClick={() => setIframeKey((k) => k + 1)}
-              title="Reset View"
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
+              title="Recharger le viewport"
+              className="p-1.5 text-black hover:bg-black hover:text-white border border-black transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
             <a
               href={currentSplat.url}
               target="_blank"
               rel="noreferrer"
-              title="Open full scene in SuperSplat"
-              className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800 transition-colors"
+              title="Ouvrir la scène sur superspl.at"
+              className="p-1.5 text-black hover:bg-black hover:text-white border border-black transition-colors"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
-            <button
-              onClick={() => onOpenExplore(currentSplat)}
-              title="Immersive Modal Fullscreen"
-              className="py-1 px-2.5 bg-sky-500 hover:bg-sky-400 text-zinc-950 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Fullscreen</span>
-            </button>
+            {/* FULLSCREEN BUTTON: ONLY SHOWN WHEN PREVIEW IS ACTIVE! */}
+            {isPreviewActive && (
+              <button
+                onClick={() => onOpenExplore(currentSplat)}
+                title="Afficher en plein écran immersif"
+                className="py-1 px-2.5 sm:px-3 bg-black hover:bg-zinc-800 text-white border border-black text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">PLEIN ÉCRAN</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Big Stage Viewer Frame */}
         <div 
-          className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-black"
+          className="relative w-full h-[340px] xs:h-[420px] sm:h-[540px] lg:h-[620px] bg-zinc-950"
           style={{ contain: 'strict', isolation: 'isolate', transform: 'translateZ(0)' }}
         >
           {isPreviewActive && !isModalOpen ? (
@@ -184,18 +185,21 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
                 }}
               />
               {!isModalOpen && (
-                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-4">
-                  <div className="flex flex-col items-center gap-3 text-center max-w-sm">
+                <div className="absolute inset-0 bg-white/40 flex flex-col items-center justify-center p-4">
+                  <div className="flex flex-col items-center gap-3 text-center max-w-sm border border-black bg-white p-5 shadow-[4px_4px_0px_#000000]">
+                    <span className="text-xs font-mono uppercase tracking-widest text-black font-bold">
+                      MODE ÉCO · PRÉVIEW 3D EN PAUSE
+                    </span>
+                    <p className="text-xs text-zinc-700 font-sans">
+                      Le moteur 3D WebGL est mis en pause pour éviter de charger le processeur graphique (0% GPU).
+                    </p>
                     <button
                       onClick={() => setLocalOverride(true)}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg transition-transform hover:scale-105"
+                      className="px-4 py-2 bg-black hover:bg-zinc-800 text-white border border-black text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-colors"
                     >
                       <Eye className="w-4 h-4" />
-                      <span>Charger la scène 3D temps réel</span>
+                      <span>ACTIVER LE MODÈLE 3D</span>
                     </button>
-                    <p className="text-xs text-zinc-300">
-                      Prévisualisation masquée pour économiser les ressources (0% GPU).
-                    </p>
                   </div>
                 </div>
               )}
@@ -203,53 +207,57 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
           )}
         </div>
 
-        {/* Technical Telemetry & Details Strip */}
-        <div className="p-4 bg-zinc-950/80 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3 text-zinc-400 font-mono">
-            <span className="text-zinc-200">{currentSplat.category}</span>
+        {/* Technical Details Strip */}
+        <div className="p-3 sm:p-4 bg-white border-t border-black flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3 text-black font-mono">
+            <span className="font-bold border border-black px-1.5 py-0.5">{currentSplat.category}</span>
             <span>·</span>
             <span>{currentSplat.splatCount || '1M splats'}</span>
             <span>·</span>
-            <span className="text-emerald-400">XR Spatial Tracking Ready</span>
+            <span className="text-black/70">{currentSplat.captureNotes || 'Volumetric Radiance Field'}</span>
           </div>
 
-          <div className="text-zinc-400 text-xs max-w-lg">
+          <div className="text-zinc-700 text-xs max-w-lg">
             {currentSplat.description}
           </div>
         </div>
       </div>
 
-      {/* Filmstrip Carousel to Pick Active Model */}
-      <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
-        <div className="text-xs font-mono uppercase text-zinc-400 mb-2 px-1 flex items-center justify-between">
-          <span>Filmstrip Select ({splats.length} Models)</span>
-          <span className="text-[11px] text-zinc-500">Click any card to load into stage</span>
+      {/* Filmstrip Grid to Pick Active Model */}
+      <div className="p-3 sm:p-4 bg-white border border-black">
+        <div className="text-xs font-mono uppercase tracking-wider text-black font-bold mb-3 flex items-center justify-between border-b border-black pb-2">
+          <span>CATALOGUE DES MODÈLES ({splats.length} SCÈNES)</span>
+          <span className="text-[10px] text-black/60 font-mono">CLIQUER POUR CHARGER DANS LA SCÈNE</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {splats.map((splat) => {
             const isSelected = splat.id === currentSplat.id;
             return (
               <button
                 key={splat.id}
                 onClick={() => onSelectSplat(splat.id)}
-                className={`p-2.5 rounded-lg border text-left transition-all ${
+                className={`p-2.5 border text-left transition-all ${
                   isSelected
-                    ? 'bg-zinc-800/90 border-sky-500 shadow-md ring-1 ring-sky-500/30'
-                    : 'bg-zinc-950/70 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900'
+                    ? 'bg-black text-white border-black shadow-[2px_2px_0px_#000000]'
+                    : 'bg-white text-black border-black hover:bg-zinc-100'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono text-sky-400 truncate max-w-[100px]">
+                  <span className={`text-[10px] font-mono uppercase truncate max-w-[100px] ${
+                    isSelected ? 'text-white/80' : 'text-black/60'
+                  }`}>
                     {splat.supersplatId}
                   </span>
                   {isSelected && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0" />
+                    <span className="w-1.5 h-1.5 bg-white shrink-0" />
                   )}
                 </div>
-                <h4 className="text-xs font-medium text-zinc-200 truncate">
+                <h4 className="text-xs font-black uppercase truncate">
                   {splat.title}
                 </h4>
-                <p className="text-[11px] text-zinc-500 truncate mt-0.5">
+                <p className={`text-[10px] font-mono uppercase truncate mt-0.5 ${
+                  isSelected ? 'text-white/70' : 'text-black/50'
+                }`}>
                   {splat.category}
                 </p>
               </button>
@@ -260,3 +268,4 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
     </div>
   );
 };
+

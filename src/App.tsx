@@ -16,15 +16,9 @@ import { EmbedCodeModal } from './components/EmbedCodeModal';
 import { AddSplatModal } from './components/AddSplatModal';
 import { ControlsGuideModal } from './components/ControlsGuideModal';
 import { 
-  Sparkles, 
-  Layers, 
-  HelpCircle, 
-  Plus, 
-  Columns, 
-  Compass, 
   Eye, 
-  EyeOff,
-  Radio, 
+  EyeOff, 
+  Compass, 
   ExternalLink 
 } from 'lucide-react';
 
@@ -114,7 +108,7 @@ export default function App() {
   // Ambient soundtrack state
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // 3D Preview Active State (User can toggle off to reduce GPU load on low-spec PCs)
+  // 3D Preview Active State: OFF BY DEFAULT as explicitly requested
   const [is3DPreviewEnabled, setIs3DPreviewEnabled] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('mtlsplat_preview_enabled');
@@ -124,7 +118,7 @@ export default function App() {
     } catch {
       // default
     }
-    return true;
+    return false; // Previews OFF by default!
   });
 
   const handleToggle3DPreview = () => {
@@ -182,7 +176,7 @@ export default function App() {
   };
 
   const handleResetDefaults = () => {
-    if (window.confirm('Reset gallery to the original 3D Gaussian Splats?')) {
+    if (window.confirm('Réinitialiser la galerie aux modèles 3D Gaussian Splats originaux?')) {
       setSplats(DEFAULT_SPLATS);
       setCinemaId(DEFAULT_SPLATS[0].id);
       localStorage.removeItem(STORAGE_KEY);
@@ -207,7 +201,7 @@ export default function App() {
   const hasCustomSplats = splats.some((s) => !s.isUserOriginal);
 
   return (
-    <div className="min-h-screen bg-[#0b0c10] text-zinc-100 flex flex-col selection:bg-sky-500/30 selection:text-white w-full max-w-full overflow-x-hidden relative">
+    <div className="min-h-screen bg-white text-black flex flex-col selection:bg-black selection:text-white w-full max-w-full overflow-x-hidden relative font-sans">
       {/* Underlying Page Content (Automatically blurred when fullscreen modal is in foreground) */}
       <div className={`flex flex-col flex-1 w-full transition-all duration-300 ${
         modalSplat ? 'filter blur-md brightness-75 scale-[0.99] origin-center pointer-events-none select-none' : ''
@@ -228,75 +222,88 @@ export default function App() {
           onToggle3DPreview={handleToggle3DPreview}
         />
 
-        {/* Hero Banner Area */}
-        <section className="relative border-b border-zinc-800/80 bg-gradient-to-b from-zinc-900/40 via-zinc-950/60 to-transparent w-full overflow-hidden">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 w-full overflow-hidden">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="space-y-3 max-w-2xl">
-                <div className="flex items-center gap-2 text-xs font-mono text-sky-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                  <span>Montréal · Captures Spatiales 3D & Objets Urbains</span>
-                </div>
-                
-                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-center gap-2 sm:gap-3">
-                  <span>MTL</span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400">SPLAT</span>
-                </h2>
-                
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-normal">
-                  <strong className="text-zinc-100 font-semibold">MTLSPLAT</strong> est une archive 3D dédiée à la capture volumétrique des objets, machines et reliques emblématiques de Montréal. Motos urbaines sur le bitume, vélos de montagne taillés pour les sentiers du Mont-Royal ou artefacts des ruelles : chaque scène est immortalisée en Gaussian Splats photoréalistes avec reflets et profondeur en 6-DoF temps réel.
+        {/* Hero Banner: Minimalist Brutalist Typography & Montreal Spatial Archive Context */}
+        <section className="relative border-b border-black bg-white w-full overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full overflow-hidden">
+            {/* Top Technical Kicker */}
+            <div className="flex items-center justify-between border-b border-black pb-3 mb-6 text-xs font-mono uppercase tracking-widest text-black/70">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-black shrink-0" />
+                <span>MONTRÉAL · QC · 45.5017° N, 73.5673° W</span>
+              </div>
+              <span className="hidden sm:inline">SUPERSPATIAL ENGINE 6-DOF</span>
+            </div>
+
+            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
+              {/* Massive Brutalist Headline & Editorial Body */}
+              <div className="space-y-4 max-w-3xl">
+                <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-black leading-none">
+                  MTLSPLAT
+                </h1>
+
+                <p className="text-base sm:text-lg font-mono uppercase tracking-tight text-black font-bold">
+                  Archive 3D des Objets Urbains, Motos & Artefacts de la Métropole
                 </p>
 
-                {/* Cultural badges */}
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-mono text-zinc-400">
-                  <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-sky-300">
-                    📍 Montréal, QC
+                <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed font-normal max-w-2xl">
+                  <strong>MTLSPLAT</strong> documente l'écosystème matériel et urbain de Montréal grâce au Gaussian Splatting 3D (3DGS). Motocyclettes customisées stationnées sur l'asphalte du Mile-End, vélos de montagne (MTB) forgés pour les sous-bois du Mont-Royal ou artefacts des ruelles industrielles : chaque sujet est figé en champ de radiance photoréaliste volumétrique, navigable en 6 degrés de liberté (6-DoF) temps réel.
+                </p>
+
+                {/* Technical Meta Tags */}
+                <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] font-mono uppercase">
+                  <span className="border border-black px-2.5 py-1 text-black font-bold">
+                    📍 MONTRÉAL (QC)
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
-                    🔬 Gaussian Splats (3DGS)
+                  <span className="border border-black px-2.5 py-1 text-black">
+                    🔬 3D GAUSSIAN SPLATTING
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-emerald-400">
-                    ⚡ WebGL 6-DoF
+                  <span className="border border-black px-2.5 py-1 text-black">
+                    ⚡ WEBGL 6-DOF STREAMING
+                  </span>
+                  <span className="border border-black px-2.5 py-1 text-black">
+                    🍃 PRÉVIEWS ALLÉGÉES PAR DÉFAUT
                   </span>
                 </div>
               </div>
 
-              {/* Quick Stats / Info strip */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono text-zinc-400 border-t md:border-t-0 md:border-l border-zinc-800 pt-3 md:pt-0 md:pl-6">
+              {/* Brutalist KPI / Metrics Block */}
+              <div className="border border-black p-4 sm:p-5 bg-zinc-50 flex flex-col justify-between gap-4 shrink-0 lg:w-72 shadow-[4px_4px_0px_#000000]">
                 <div>
-                  <span className="block text-zinc-500 text-[10px] uppercase">Archives MTL</span>
-                  <span className="text-zinc-200 font-semibold text-sm">{splats.length} Scènes 3D</span>
+                  <span className="text-[10px] font-mono uppercase text-black/60 block">SCÈNES NUMÉRISÉES</span>
+                  <span className="text-3xl sm:text-4xl font-black font-mono text-black">{splats.length}</span>
                 </div>
-                <div className="w-[1px] h-6 bg-zinc-800" />
-                <div>
-                  <span className="block text-zinc-500 text-[10px] uppercase">Immersion XR</span>
-                  <span className="text-emerald-400 font-semibold text-sm">Prêt pour VR</span>
+
+                <div className="border-t border-black pt-3">
+                  <span className="text-[10px] font-mono uppercase text-black/60 block">ACCÉLÉRATION GPU</span>
+                  <span className="text-xs font-mono font-bold uppercase text-black">
+                    {is3DPreviewEnabled ? 'LIVE 3D ACTIF' : 'ÉCO ACTIF (0% GPU)'}
+                  </span>
                 </div>
-                <div className="w-[1px] h-6 bg-zinc-800" />
-                <div>
+
+                <div className="border-t border-black pt-3">
                   <button
                     onClick={() => setIsGuideOpen(true)}
-                    className="text-left group text-sky-400 hover:text-sky-300"
+                    className="w-full text-left font-mono text-xs uppercase font-bold text-black hover:underline flex items-center justify-between"
                   >
-                    <span className="block text-zinc-500 text-[10px] uppercase">Navigation</span>
-                    <span className="font-semibold text-sm underline underline-offset-2">Guide Caméra</span>
+                    <span>GUIDE NAVIGATION 6-DOF</span>
+                    <span>→</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Interactive Category Filter Bar */}
+            {/* Category Filter Bar */}
             {categories.length > 2 && (
-              <div className="mt-6 pt-4 border-t border-zinc-800/60 flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-                <span className="text-xs text-zinc-500 font-mono mr-1 shrink-0">Filter:</span>
+              <div className="mt-8 pt-4 border-t border-black flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+                <span className="text-xs font-mono uppercase text-black/60 mr-2 shrink-0 font-bold">FILTRE :</span>
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors shrink-0 ${
+                    className={`px-3 py-1 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 border border-black ${
                       selectedCategory === cat
-                        ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent'
+                        ? 'bg-black text-white shadow-[2px_2px_0px_#000000]'
+                        : 'bg-white text-black hover:bg-black hover:text-white'
                     }`}
                   >
                     {cat}
@@ -308,70 +315,70 @@ export default function App() {
         </section>
 
         {/* Main Content Body */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-hidden">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-hidden">
           {/* VIEW MODE 1: GRID VIEW */}
           {viewMode === 'grid' && (
             <div>
-              {/* Performance & Eco Mode Control Banner */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-3 sm:px-4 sm:py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs shadow-sm">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                    is3DPreviewEnabled ? 'bg-sky-400' : 'bg-emerald-400'
+              {/* Performance / Eco Mode Control Banner (Brutalist style) */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-8 p-3.5 sm:px-5 sm:py-3.5 bg-white border border-black shadow-[3px_3px_0px_#000000]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`w-3 h-3 border border-black shrink-0 ${
+                    is3DPreviewEnabled ? 'bg-black' : 'bg-white'
                   }`} />
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0 truncate">
-                    <span className="font-semibold text-zinc-100 truncate">
-                      {is3DPreviewEnabled ? 'Previews 3D Temps Réel Actives' : 'Mode Léger Actif (Previews Masquées)'}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 min-w-0 truncate">
+                    <span className="font-mono text-xs uppercase font-bold text-black truncate">
+                      {is3DPreviewEnabled ? 'PRÉVIEWS 3D TEMPS RÉEL ACTIVÉES' : 'PRÉVIEWS 3D MASQUÉES PAR DÉFAUT (MODE LÉGER)'}
                     </span>
-                    <span className="text-zinc-400 text-[11px] truncate">
+                    <span className="text-black/60 text-[11px] font-mono uppercase hidden md:inline truncate">
                       {is3DPreviewEnabled 
-                        ? '6-DoF WebGL · Consomme des ressources GPU' 
-                        : '0% de charge GPU · Idéal pour alléger les ordinateurs plus lents'}
+                        ? 'Consomme des ressources WebGL' 
+                        : '0% de charge GPU · Idéal pour alléger la machine'}
                     </span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleToggle3DPreview}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 border shrink-0 ${
+                  className={`px-3 py-1.5 border border-black text-xs font-mono uppercase tracking-wider transition-colors flex items-center gap-1.5 shrink-0 ${
                     is3DPreviewEnabled
-                      ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 font-semibold'
+                      ? 'bg-white hover:bg-black hover:text-white text-black'
+                      : 'bg-black hover:bg-zinc-800 text-white font-bold'
                   }`}
                   title={
                     is3DPreviewEnabled 
-                      ? 'Masquer les previews 3D pour alléger votre machine' 
-                      : 'Démasquer les previews 3D interactives'
+                      ? 'Masquer toutes les previews 3D pour alléger votre machine' 
+                      : 'Démasquer toutes les previews 3D interactives'
                   }
                 >
                   {is3DPreviewEnabled ? (
                     <>
-                      <EyeOff className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Masquer les previews (Alléger)</span>
+                      <EyeOff className="w-3.5 h-3.5" />
+                      <span>MASQUER TOUTES LES PRÉVIEWS</span>
                     </>
                   ) : (
                     <>
-                      <Eye className="w-3.5 h-3.5 text-white" />
-                      <span>Démasquer les previews 3D</span>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>ACTIVER TOUTES LES PRÉVIEWS 3D</span>
                     </>
                   )}
                 </button>
               </div>
 
               {filteredSplats.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-zinc-800 rounded-2xl bg-zinc-950/40">
-                  <Compass className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-                  <h3 className="text-base font-semibold text-zinc-300">No Gaussian Splats found</h3>
-                  <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
-                    Try adjusting your search query or clear the active category filter.
+                <div className="text-center py-20 border border-black bg-white p-8">
+                  <Compass className="w-10 h-10 text-black mx-auto mb-3" />
+                  <h3 className="text-sm font-black uppercase text-black font-mono">Aucun Gaussian Splat trouvé</h3>
+                  <p className="text-xs text-zinc-600 mt-1 max-w-sm mx-auto font-sans">
+                    Modifiez vos termes de recherche ou réinitialisez le filtre de catégorie.
                   </p>
                   <button
                     onClick={() => {
                       setSearchQuery('');
                       setSelectedCategory('All');
                     }}
-                    className="mt-4 px-3 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors"
+                    className="mt-4 px-4 py-2 text-xs font-mono uppercase tracking-wider bg-black hover:bg-zinc-800 text-white border border-black transition-colors"
                   >
-                    Clear Filters
+                    Effacer les filtres
                   </button>
                 </div>
               ) : (
@@ -421,35 +428,35 @@ export default function App() {
           )}
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-zinc-800/80 bg-zinc-950/80 mt-12 sm:mt-16 py-6 sm:py-8 w-full overflow-hidden">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 w-full overflow-hidden">
+        {/* Minimalist Brutalist Footer */}
+        <footer className="border-t border-black bg-white mt-16 py-8 w-full overflow-hidden text-black font-mono">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs w-full overflow-hidden">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <span className="font-bold text-white tracking-tight">MTLSPLAT</span>
-              <span aria-hidden="true">·</span>
-              <span>Archive Spatiale des Objets Urbains de Montréal</span>
-              <span aria-hidden="true" className="hidden sm:inline">·</span>
-              <span className="font-mono text-zinc-600 hidden sm:inline">SuperSplat 6-DoF</span>
+              <span className="font-black uppercase tracking-tight text-sm">MTLSPLAT</span>
+              <span aria-hidden="true">/</span>
+              <span className="uppercase text-black/70">Archive Spatiale des Objets Urbains de Montréal</span>
+              <span aria-hidden="true" className="hidden sm:inline">/</span>
+              <span className="text-black/50 hidden sm:inline">SuperSplat 6-DoF</span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 uppercase font-bold text-[11px]">
               <button
                 onClick={() => setIsGuideOpen(true)}
-                className="hover:text-zinc-300 transition-colors"
+                className="hover:underline transition-all"
               >
-                Controls
+                Contrôles
               </button>
               <button
                 onClick={() => setIsAddOpen(true)}
-                className="hover:text-zinc-300 transition-colors"
+                className="hover:underline transition-all"
               >
-                Add Splat
+                Ajouter Splat
               </button>
               <a
                 href="https://superspl.at"
                 target="_blank"
                 rel="noreferrer"
-                className="text-sky-400 hover:text-sky-300 flex items-center gap-1 transition-colors"
+                className="hover:underline flex items-center gap-1 transition-all"
               >
                 <span>superspl.at</span>
                 <ExternalLink className="w-3 h-3" />
