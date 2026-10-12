@@ -6,10 +6,11 @@ import {
   Code, 
   HelpCircle,
   Eye, 
-  EyeOff
+  EyeOff,
+  Trash2
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
-import { getSplatPosterUrl } from '../data/defaultSplats';
+import { getSplatPosterUrl, DEFAULT_POSTER_SVG } from '../data/defaultSplats';
 
 interface CinemaViewProps {
   splats: SplatItem[];
@@ -18,6 +19,7 @@ interface CinemaViewProps {
   onOpenExplore: (splat: SplatItem) => void;
   onOpenEmbed: (splat: SplatItem) => void;
   onOpenGuide: () => void;
+  onDelete?: (id: string) => void;
   isModalOpen?: boolean;
   is3DPreviewEnabled?: boolean;
 }
@@ -29,6 +31,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   onOpenExplore,
   onOpenEmbed,
   onOpenGuide,
+  onDelete,
   isModalOpen = false,
   is3DPreviewEnabled = false,
 }) => {
@@ -139,6 +142,18 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
+            {onDelete && currentSplat && (
+              <button
+                onClick={() => onDelete(currentSplat.id)}
+                title="Supprimer cette scène de l'archive (Code secret requis)"
+                aria-label={`Supprimer ${currentSplat.title}`}
+                className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-red-600 hover:text-white border border-black transition-colors flex items-center gap-1 group/del shadow-[1px_1px_0px_#000000]"
+              >
+                <Trash2 className="w-3.5 h-3.5 group-hover/del:text-white transition-colors" />
+                <span className="hidden lg:inline">SUPPRIMER</span>
+              </button>
+            )}
+
             {/* FULLSCREEN BUTTON: ONLY SHOWN WHEN PREVIEW IS ACTIVE! */}
             {isPreviewActive && (
               <button
@@ -180,7 +195,9 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
                   if (target.src.includes('/v1/')) {
                     target.src = target.src.replace('/v1/', '/v2/');
                   } else if (target.src.includes('/v2/')) {
-                    target.src = target.src.replace('/v2/', '/v1/');
+                    target.src = DEFAULT_POSTER_SVG;
+                  } else {
+                    target.src = DEFAULT_POSTER_SVG;
                   }
                 }}
               />

@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "splat": {
+      "title": "Gaussian Splat Item",
+      "description": "3D Gaussian Splat scene archived in MTLSPLAT",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Unique identifier for the splat record"
+        },
+        "supersplatId": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "SuperSplat or PlayCanvas scene ID"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "User visible title of the 3D capture"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Detailed description of the 3D capture"
+        },
+        "url": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "PlayCanvas / SuperSplat viewer URL"
+        },
+        "posterUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Poster thumbnail image URL"
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Optional category tag"
+        },
+        "splatCount": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Approximate number of radiance splats"
+        },
+        "captureNotes": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Technical capture notes"
+        },
+        "isUserOriginal": {
+          "type": "boolean",
+          "description": "True if one of the initial canonical seeds"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp or date string of creation"
+        }
+      },
+      "required": ["id", "supersplatId", "title", "url"]
+    }
+  },
+  "firestore": {
+    "/splats/{splatId}": {
+      "schema": "splat",
+      "description": "Collection of Gaussian Splat scenes displayed in MTLSPLAT"
+    }
+  }
+}

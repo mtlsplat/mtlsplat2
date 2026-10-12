@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidSplat(data) {
+      return data.keys().hasAll(['id', 'supersplatId', 'title', 'url']) &&
+        data.keys().hasOnly(['id', 'supersplatId', 'title', 'description', 'url', 'posterUrl', 'category', 'splatCount', 'captureNotes', 'isUserOriginal', 'createdAt']) &&
+        data.id is string && isValidId(data.id) &&
+        data.supersplatId is string && data.supersplatId.size() > 0 && data.supersplatId.size() <= 64 &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
+        data.url is string && data.url.size() > 0 && data.url.size() <= 500 &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 1000)) &&
+        (!('posterUrl' in data) || (data.posterUrl is string && data.posterUrl.size() <= 500)) &&
+        (!('category' in data) || (data.category is string && data.category.size() <= 100)) &&
+        (!('splatCount' in data) || (data.splatCount is string && data.splatCount.size() <= 100)) &&
+        (!('captureNotes' in data) || (data.captureNotes is string && data.captureNotes.size() <= 500)) &&
+        (!('isUserOriginal' in data) || data.isUserOriginal is bool) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
+    }
+
+    match /splats/{splatId} {
+      // Public gallery: All visitors can read and list splats
+      allow get, list: if true;
+
+      // Anyone can add a valid splat to the community archive
+      allow create: if isValidId(splatId) &&
+        incoming().id == splatId &&
+        isValidSplat(incoming()) &&
+        incoming().isUserOriginal != true;
+
+      // Allow deleting user-contributed splats, but protect original Montreal archives
+      allow delete: if isValidId(splatId) &&
+        (!('isUserOriginal' in existing()) || existing().isUserOriginal != true);
+
+      // Updates must preserve immutable id and original flag
+      allow update: if isValidId(splatId) &&
+        isValidSplat(incoming()) &&
+        incoming().id == existing().id &&
+        (!('isUserOriginal' in existing()) || existing().isUserOriginal != true);
+    }
+  }
+}

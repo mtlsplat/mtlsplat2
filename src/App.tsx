@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SplatItem, ViewMode } from './types/splat';
 import { DEFAULT_SPLATS } from './data/defaultSplats';
 import { soundtrack } from './services/soundtrackService';
@@ -14,6 +14,7 @@ import { CinemaView } from './components/CinemaView';
 import { FullscreenViewerModal } from './components/FullscreenViewerModal';
 import { EmbedCodeModal } from './components/EmbedCodeModal';
 import { AddSplatModal } from './components/AddSplatModal';
+import { DeleteSplatModal } from './components/DeleteSplatModal';
 import { ControlsGuideModal } from './components/ControlsGuideModal';
 import { MouseGradient } from './components/MouseGradient';
 import { 
@@ -22,8 +23,25 @@ import {
   Compass, 
   ExternalLink 
 } from 'lucide-react';
+import { 
+  subscribeToRemoteSplats, 
+  saveSplatToFirestore, 
+  deleteSplatFromFirestore 
+} from './firebase';
 
 const STORAGE_KEY = 'gaussian_splats_gallery_data_v5';
+const DELETED_KEY = 'gaussian_splats_deleted_ids_v1';
+
+const getInitialDeletedIds = (): Set<string> => {
+  try {
+    const stored = localStorage.getItem(DELETED_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return new Set(parsed);
+    }
+  } catch (e) {}
+  return new Set();
+};
 
 const restoreLiveAnimation = (item: SplatItem): SplatItem => {
   if (item.url.includes('superspl.at')) {
@@ -45,52 +63,34 @@ const mergeWithDefaults = (item: SplatItem): SplatItem => {
 };
 
 export default function App() {
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(() => getInitialDeletedIds());
+  const deletedIdsRef = useRef<Set<string>>(deletedIds);
+  deletedIdsRef.current = deletedIds;
+
   const [splats, setSplats] = useState<SplatItem[]>(() => {
+    const initialDeleted = getInitialDeletedIds();
+    let initialList = DEFAULT_SPLATS;
     try {
       const savedV5 = localStorage.getItem(STORAGE_KEY);
       if (savedV5) {
         const parsed = JSON.parse(savedV5);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(mergeWithDefaults);
+          initialList = parsed.map(mergeWithDefaults);
         }
-      }
-
-      const savedV4 = localStorage.getItem('gaussian_splats_gallery_data_v4');
-      if (savedV4) {
-        const parsedV4 = JSON.parse(savedV4);
-        if (Array.isArray(parsedV4) && parsedV4.length > 0) {
-          return parsedV4.map(mergeWithDefaults);
-        }
-      }
-
-      const savedV3 = localStorage.getItem('gaussian_splats_gallery_data_v3');
-      if (savedV3) {
-        const parsedV3 = JSON.parse(savedV3);
-        if (Array.isArray(parsedV3) && parsedV3.length > 0) {
-          return parsedV3.map(mergeWithDefaults);
-        }
-      }
-
-      const savedV2 = localStorage.getItem('gaussian_splats_gallery_data_v2');
-      if (savedV2) {
-        const parsedV2 = JSON.parse(savedV2);
-        if (Array.isArray(parsedV2) && parsedV2.length > 0) {
-          return parsedV2.map(mergeWithDefaults);
-        }
-      }
-
-      const savedV1 = localStorage.getItem('gaussian_splats_gallery_data');
-      if (savedV1) {
-        const parsedV1 = JSON.parse(savedV1);
-        if (Array.isArray(parsedV1)) {
-          const customOnly = parsedV1.filter((s: SplatItem) => !s.isUserOriginal);
-          return [...DEFAULT_SPLATS, ...customOnly.map(mergeWithDefaults)];
+      } else {
+        const savedV4 = localStorage.getItem('gaussian_splats_gallery_data_v4');
+        if (savedV4) {
+          const parsedV4 = JSON.parse(savedV4);
+          if (Array.isArray(parsedV4) && parsedV4.length > 0) {
+            initialList = parsedV4.map(mergeWithDefaults);
+          }
         }
       }
     } catch (e) {
       console.error('Failed to load saved splats from storage', e);
     }
-    return DEFAULT_SPLATS;
+
+    return initialList.filter((s) => !initialDeleted.has(s.id));
   });
 
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -101,6 +101,7 @@ export default function App() {
   const [embedSplat, setEmbedSplat] = useState<SplatItem | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [splatToDelete, setSplatToDelete] = useState<SplatItem | null>(null);
   
   // Cinema view selected ID
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
@@ -151,7 +152,49 @@ export default function App() {
     };
   }, []);
 
-  // Save to localStorage whenever splats change
+  const [cloudSynced, setCloudSynced] = useState(false);
+
+  // Synchronize with Firestore real-time community collection
+  useEffect(() => {
+    const unsubscribe = subscribeToRemoteSplats(
+      (remoteSplats) => {
+        setCloudSynced(true);
+        setSplats((prev) => {
+          const currentDeleted = deletedIdsRef.current;
+          const merged = DEFAULT_SPLATS.filter((d) => !currentDeleted.has(d.id));
+          const seen = new Set(merged.map((m) => m.id));
+
+          // 1. Add remote splats from Firestore
+          for (const remote of remoteSplats) {
+            if (!currentDeleted.has(remote.id) && !seen.has(remote.id)) {
+              merged.push(mergeWithDefaults(remote));
+              seen.add(remote.id);
+            }
+          }
+
+          // 2. Keep and auto-sync any local custom splats not yet present in Firestore
+          for (const local of prev) {
+            if (!currentDeleted.has(local.id) && !local.isUserOriginal && !seen.has(local.id)) {
+              merged.push(local);
+              seen.add(local.id);
+              saveSplatToFirestore(local).catch(() => {});
+            }
+          }
+
+          return merged;
+        });
+      },
+      (error) => {
+        console.warn('Real-time sync error (falling back to local cache):', error);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Save to localStorage whenever splats change (offline & instant cache)
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(splats));
@@ -160,19 +203,66 @@ export default function App() {
     }
   }, [splats]);
 
-  const handleAddSplat = (newSplat: SplatItem) => {
-    setSplats((prev) => [newSplat, ...prev]);
-    setCinemaId(newSplat.id);
+  const handleAddSplat = async (newSplat: SplatItem) => {
+    try {
+      await saveSplatToFirestore(newSplat);
+      setSplats((prev) => [newSplat, ...prev.filter((s) => s.id !== newSplat.id)]);
+      setCinemaId(newSplat.id);
+    } catch (err) {
+      console.error('Failed to sync to Firestore:', err);
+      setSplats((prev) => [newSplat, ...prev.filter((s) => s.id !== newSplat.id)]);
+      setCinemaId(newSplat.id);
+      throw err;
+    }
   };
 
-  const handleDeleteSplat = (id: string) => {
-    setSplats((prev) => prev.filter((s) => s.id !== id));
+  const handleDeleteSplat = async (id: string) => {
+    setDeletedIds((prev) => {
+      const next = new Set(prev).add(id);
+      try {
+        localStorage.setItem(DELETED_KEY, JSON.stringify(Array.from(next)));
+      } catch (e) {}
+      deletedIdsRef.current = next;
+      return next;
+    });
+
+    setSplats((prev) => {
+      const remaining = prev.filter((s) => s.id !== id);
+      setCinemaId((currentCinemaId) => {
+        if (currentCinemaId === id) {
+          return remaining[0]?.id || '';
+        }
+        return currentCinemaId;
+      });
+      return remaining;
+    });
+
+    try {
+      await deleteSplatFromFirestore(id);
+    } catch (err) {
+      console.warn('Failed to delete from Firestore:', err);
+    }
+  };
+
+  const handleRequestDelete = (id: string) => {
+    const target = splats.find((s) => s.id === id);
+    if (target) {
+      setSplatToDelete(target);
+    }
+  };
+
+  const handleConfirmDelete = async (id: string) => {
+    await handleDeleteSplat(id);
+    setSplatToDelete(null);
   };
 
   const handleResetDefaults = () => {
     if (window.confirm('Réinitialiser la galerie aux modèles 3D Gaussian Splats originaux?')) {
+      setDeletedIds(new Set());
+      deletedIdsRef.current = new Set();
+      localStorage.removeItem(DELETED_KEY);
       setSplats(DEFAULT_SPLATS);
-      setCinemaId(DEFAULT_SPLATS[0].id);
+      setCinemaId(DEFAULT_SPLATS[0]?.id || '');
       localStorage.removeItem(STORAGE_KEY);
     }
   };
@@ -186,7 +276,7 @@ export default function App() {
     );
   });
 
-  const hasCustomSplats = splats.some((s) => !s.isUserOriginal);
+  const hasCustomSplats = splats.some((s) => !s.isUserOriginal) || deletedIds.size > 0;
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col selection:bg-black selection:text-white w-full max-w-full overflow-x-hidden relative font-sans">
@@ -253,6 +343,10 @@ export default function App() {
                   </span>
                   <span className="border border-black px-2.5 py-1 text-black bg-white relative z-10">
                     🍃 PRÉVIEWS ALLÉGÉES PAR DÉFAUT
+                  </span>
+                  <span className="border border-black px-2.5 py-1 text-black bg-white relative z-10 flex items-center gap-1.5 font-bold">
+                    <span className={`w-2 h-2 rounded-full ${cloudSynced ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                    <span>CLOUD SYNC {cloudSynced ? 'ACTIF' : 'CONNECTÉ'}</span>
                   </span>
                 </div>
               </div>
@@ -364,7 +458,7 @@ export default function App() {
                       onCompareSelect={(s) => {
                         setViewMode('compare');
                       }}
-                      onDelete={handleDeleteSplat}
+                      onDelete={handleRequestDelete}
                     />
                   ))}
                 </div>
@@ -381,6 +475,7 @@ export default function App() {
               onOpenExplore={(s) => setModalSplat(s)}
               onOpenEmbed={(s) => setEmbedSplat(s)}
               onOpenGuide={() => setIsGuideOpen(true)}
+              onDelete={handleRequestDelete}
               isModalOpen={!!modalSplat}
               is3DPreviewEnabled={is3DPreviewEnabled}
             />
@@ -458,6 +553,14 @@ export default function App() {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onAdd={handleAddSplat}
+      />
+
+      {/* Delete Splat Authorization Modal */}
+      <DeleteSplatModal
+        isOpen={!!splatToDelete}
+        splat={splatToDelete}
+        onClose={() => setSplatToDelete(null)}
+        onConfirmDelete={handleConfirmDelete}
       />
 
       {/* Controls & Spatial Navigation Guide Modal */}

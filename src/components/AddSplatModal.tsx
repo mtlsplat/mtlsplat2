@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { X, Plus, AlertCircle, Lock, KeyRound, Check, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 import { extractSupersplatId } from '../data/defaultSplats';
+import { REQUIRED_SECRET_CODE } from '../constants/auth';
 
 interface AddSplatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (newSplat: SplatItem) => void;
+  onAdd: (newSplat: SplatItem) => Promise<void> | void;
 }
-
-const REQUIRED_SECRET_CODE = '9210';
 
 export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, onAdd }) => {
   const [inputUrl, setInputUrl] = useState('');
@@ -18,13 +17,14 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
   const [splatCount, setSplatCount] = useState('~1.0M splats');
   const [secretCode, setSecretCode] = useState('');
   const [showSecretCode, setShowSecretCode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const isCodeAuthorized = secretCode.trim() === REQUIRED_SECRET_CODE;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -46,6 +46,7 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
       title: title.trim() || `Gaussian Splat ${parsed.id}`,
       description: description.trim() || 'Capture spatiale 3D Gaussian Splat archivée dans MTLSPLAT.',
       url: parsed.url,
+      posterUrl: parsed.posterUrl,
       category: 'Archive 3D',
       splatCount: splatCount || '~1M splats',
       captureNotes: 'Capture ajoutée manuellement (Autorisation confirmée)',
@@ -53,12 +54,20 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
       isUserOriginal: false,
     };
 
-    onAdd(newSplat);
-    setInputUrl('');
-    setTitle('');
-    setDescription('');
-    setSecretCode('');
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onAdd(newSplat);
+      setInputUrl('');
+      setTitle('');
+      setDescription('');
+      setSecretCode('');
+      onClose();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur de publication dans la base Firestore.';
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const parsedPreview = inputUrl.trim() ? extractSupersplatId(inputUrl) : null;
@@ -249,13 +258,21 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
             </button>
             <button
               type="submit"
+              disabled={isSubmitting || !isCodeAuthorized}
               className={`px-4 py-2 text-xs font-mono uppercase tracking-wider text-white border border-black font-bold transition-colors flex items-center gap-1.5 ${
-                isCodeAuthorized 
-                  ? 'bg-black hover:bg-zinc-800' 
-                  : 'bg-black/90 hover:bg-black'
+                isSubmitting
+                  ? 'bg-zinc-700 cursor-wait'
+                  : isCodeAuthorized 
+                    ? 'bg-black hover:bg-zinc-800 cursor-pointer shadow-[2px_2px_0px_#000000]' 
+                    : 'bg-black/60 cursor-not-allowed'
               }`}
             >
-              {isCodeAuthorized ? (
+              {isSubmitting ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Enregistrement Cloud...</span>
+                </>
+              ) : isCodeAuthorized ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
                   <span>Ajouter à l'Archive</span>
@@ -263,7 +280,7 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
               ) : (
                 <>
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Ajouter à l'Archive</span>
+                  <span>Code Requis</span>
                 </>
               )}
             </button>

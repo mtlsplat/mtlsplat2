@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Columns, ArrowLeftRight, Maximize2, ExternalLink, Code, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { SplatItem } from '../types/splat';
-import { getSplatPosterUrl } from '../data/defaultSplats';
+import { getSplatPosterUrl, DEFAULT_POSTER_SVG } from '../data/defaultSplats';
 
 interface DualCompareViewProps {
   splats: SplatItem[];
@@ -186,7 +186,9 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
                     if (target.src.includes('/v1/')) {
                       target.src = target.src.replace('/v1/', '/v2/');
                     } else if (target.src.includes('/v2/')) {
-                      target.src = target.src.replace('/v2/', '/v1/');
+                      target.src = DEFAULT_POSTER_SVG;
+                    } else {
+                      target.src = DEFAULT_POSTER_SVG;
                     }
                   }}
                 />
@@ -282,7 +284,9 @@ export const DualCompareView: React.FC<DualCompareViewProps> = ({
                     if (target.src.includes('/v1/')) {
                       target.src = target.src.replace('/v1/', '/v2/');
                     } else if (target.src.includes('/v2/')) {
-                      target.src = target.src.replace('/v2/', '/v1/');
+                      target.src = DEFAULT_POSTER_SVG;
+                    } else {
+                      target.src = DEFAULT_POSTER_SVG;
                     }
                   }}
                 />

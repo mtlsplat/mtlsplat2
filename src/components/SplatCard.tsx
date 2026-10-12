@@ -10,7 +10,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
-import { getSplatPosterUrl } from '../data/defaultSplats';
+import { getSplatPosterUrl, DEFAULT_POSTER_SVG } from '../data/defaultSplats';
 
 interface SplatCardProps {
   splat: SplatItem;
@@ -127,7 +127,9 @@ export const SplatCard: React.FC<SplatCardProps> = ({
                 if (target.src.includes('/v1/')) {
                   target.src = target.src.replace('/v1/', '/v2/');
                 } else if (target.src.includes('/v2/')) {
-                  target.src = target.src.replace('/v2/', '/v1/');
+                  target.src = DEFAULT_POSTER_SVG;
+                } else {
+                  target.src = DEFAULT_POSTER_SVG;
                 }
               }}
             />
@@ -295,13 +297,14 @@ export const SplatCard: React.FC<SplatCardProps> = ({
               </button>
             )}
 
-            {!splat.isUserOriginal && onDelete && (
+            {onDelete && (
               <button
                 onClick={() => onDelete(splat.id)}
-                title="Supprimer la scène de l'archive"
-                className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000]"
+                title="Supprimer la scène de l'archive (Code secret requis)"
+                aria-label={`Supprimer la scène ${splat.title}`}
+                className="p-2 border border-black bg-white hover:bg-red-600 hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000] flex items-center justify-center group/del"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3.5 h-3.5 group-hover/del:text-white transition-colors" />
               </button>
             )}
           </div>
