@@ -8,7 +8,8 @@ import {
   VolumeX, 
   Eye, 
   EyeOff,
-  Box
+  Box,
+  Shield
 } from 'lucide-react';
 import { ViewMode } from '../types/splat';
 
@@ -18,6 +19,7 @@ interface NavbarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onOpenAddModal: () => void;
+  onOpenSecurityModal: () => void;
   isPlayingAudio: boolean;
   onToggleAudio: () => void;
   is3DPreviewEnabled: boolean;
@@ -30,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchQuery,
   onSearchChange,
   onOpenAddModal,
+  onOpenSecurityModal,
   isPlayingAudio,
   onToggleAudio,
   is3DPreviewEnabled,
@@ -169,6 +172,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
+
+            {/* Security Passkey Settings */}
+            <button
+              onClick={onOpenSecurityModal}
+              title="Sécurité Admin : Mot de passe chiffré SHA-256"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 border border-black text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 bg-white text-black hover:bg-black/5 transition-colors"
+            >
+              <Shield className="w-3.5 h-3.5 text-black" />
+              <span className="hidden xl:inline text-[11px]">SÉCURITÉ</span>
+            </button>
 
             {/* Add Splat CTA */}
             <button

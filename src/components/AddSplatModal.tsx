@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, AlertCircle, Lock, KeyRound, Check, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 import { extractSupersplatId } from '../data/defaultSplats';
-import { REQUIRED_SECRET_CODE } from '../constants/auth';
+import { REQUIRED_SECRET_CODE, verifyAdminPasscode, getLockoutStatus } from '../constants/auth';
 
 interface AddSplatModalProps {
   isOpen: boolean;
@@ -22,15 +22,16 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
 
   if (!isOpen) return null;
 
-  const isCodeAuthorized = secretCode.trim() === REQUIRED_SECRET_CODE;
+  const lockout = getLockoutStatus();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Strict validation of secret code
-    if (secretCode.trim() !== REQUIRED_SECRET_CODE) {
-      setError('Code secret invalide. Vous devez saisir le code d\'autorisation pour pouvoir ajouter un splat à la galerie.');
+    // Cryptographic validation with rate-limiting & lockout
+    const authResult = await verifyAdminPasscode(secretCode);
+    if (!authResult.success) {
+      setError(authResult.error || 'Code secret d\'autorisation invalide.');
       return;
     }
 
@@ -114,26 +115,21 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {/* Secret Code Input Section */}
-          <div className={`p-3.5 border ${isCodeAuthorized ? 'border-black bg-zinc-50' : 'border-black bg-white'} transition-colors`}>
+          <div className="p-3.5 border border-black bg-zinc-50 transition-colors">
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-[11px] font-mono uppercase text-black font-black flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5 text-black" />
-                <span>Code Secret d'Autorisation <span className="text-rose-600">*</span></span>
+                <span>Code Secret d'Autorisation (Chiffré) <span className="text-rose-600">*</span></span>
               </label>
 
-              {isCodeAuthorized ? (
-                <span className="text-[10px] font-mono font-bold bg-black text-white px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                  AUTORISÉ
-                </span>
-              ) : secretCode.trim().length > 0 ? (
-                <span className="text-[10px] font-mono font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1">
+              {lockout.isLocked ? (
+                <span className="text-[10px] font-mono font-bold bg-rose-600 text-white px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
                   <ShieldAlert className="w-3 h-3" />
-                  CODE INCORRECT
+                  VERROUILLÉ ({lockout.remainingSeconds}s)
                 </span>
               ) : (
-                <span className="text-[10px] font-mono text-black/60 uppercase">
-                  Requis
+                <span className="text-[10px] font-mono text-black/70 uppercase">
+                  Protégé par hashage
                 </span>
               )}
             </div>
@@ -149,13 +145,7 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
                   setSecretCode(e.target.value);
                   if (error) setError(null);
                 }}
-                className={`w-full bg-white border ${
-                  isCodeAuthorized 
-                    ? 'border-black' 
-                    : secretCode.trim().length > 0 
-                      ? 'border-rose-600' 
-                      : 'border-black'
-                } pl-3 pr-10 py-2 text-xs font-mono tracking-widest text-black placeholder:tracking-normal placeholder:text-black/40 focus:outline-none`}
+                className="w-full bg-white border border-black pl-3 pr-10 py-2 text-xs font-mono tracking-widest text-black placeholder:tracking-normal placeholder:text-black/40 focus:outline-none focus:bg-zinc-50"
               />
               <button
                 type="button"
@@ -168,9 +158,7 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
             </div>
 
             <p className="mt-1.5 text-[10px] font-mono text-black/60">
-              {isCodeAuthorized 
-                ? '✓ Code validé. Accès autorisé pour soumettre votre modèle.' 
-                : 'Saisissez le code secret pour autoriser l\'injection du modèle dans la galerie.'}
+              Chiffrement client SHA-256 avec protection contre les attaques par force brute (max 5 tentatives).
             </p>
           </div>
 
@@ -258,13 +246,13 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !isCodeAuthorized}
+              disabled={isSubmitting || !secretCode.trim() || lockout.isLocked}
               className={`px-4 py-2 text-xs font-mono uppercase tracking-wider text-white border border-black font-bold transition-colors flex items-center gap-1.5 ${
                 isSubmitting
                   ? 'bg-zinc-700 cursor-wait'
-                  : isCodeAuthorized 
-                    ? 'bg-black hover:bg-zinc-800 cursor-pointer shadow-[2px_2px_0px_#000000]' 
-                    : 'bg-black/60 cursor-not-allowed'
+                  : !secretCode.trim() || lockout.isLocked
+                    ? 'bg-black/60 cursor-not-allowed opacity-50'
+                    : 'bg-black hover:bg-zinc-800 cursor-pointer shadow-[2px_2px_0px_#000000]'
               }`}
             >
               {isSubmitting ? (
@@ -272,15 +260,10 @@ export const AddSplatModal: React.FC<AddSplatModalProps> = ({ isOpen, onClose, o
                   <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Enregistrement Cloud...</span>
                 </>
-              ) : isCodeAuthorized ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Ajouter à l'Archive</span>
-                </>
               ) : (
                 <>
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Code Requis</span>
+                  <span>Ajouter à l'Archive</span>
                 </>
               )}
             </button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Lock, KeyRound, Check, Eye, EyeOff, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { SplatItem } from '../types/splat';
-import { REQUIRED_SECRET_CODE } from '../constants/auth';
+import { REQUIRED_SECRET_CODE, verifyAdminPasscode, getLockoutStatus } from '../constants/auth';
 
 interface DeleteSplatModalProps {
   isOpen: boolean;
@@ -31,15 +31,16 @@ export const DeleteSplatModal: React.FC<DeleteSplatModalProps> = ({
 
   if (!isOpen || !splat) return null;
 
-  const isCodeAuthorized = secretCode.trim() === REQUIRED_SECRET_CODE;
+  const lockout = getLockoutStatus();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Strict validation of shared secret code
-    if (secretCode.trim() !== REQUIRED_SECRET_CODE) {
-      setError("Code secret invalide. Vous devez saisir le code d'autorisation pour pouvoir supprimer ce splat de l'archive.");
+    // Cryptographic validation with lockout protection
+    const authResult = await verifyAdminPasscode(secretCode);
+    if (!authResult.success) {
+      setError(authResult.error || "Code secret d'autorisation invalide.");
       return;
     }
 
@@ -140,26 +141,21 @@ export const DeleteSplatModal: React.FC<DeleteSplatModalProps> = ({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {/* Secret Code Input Section */}
-          <div className={`p-3.5 border ${isCodeAuthorized ? 'border-black bg-zinc-50' : 'border-black bg-white'} transition-colors`}>
+          <div className="p-3.5 border border-black bg-zinc-50 transition-colors">
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-[11px] font-mono uppercase text-black font-black flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5 text-black" />
                 <span>Code Secret d'Autorisation <span className="text-rose-600">*</span></span>
               </label>
 
-              {isCodeAuthorized ? (
-                <span className="text-[10px] font-mono font-bold bg-black text-white px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                  AUTORISÉ
-                </span>
-              ) : secretCode.trim().length > 0 ? (
-                <span className="text-[10px] font-mono font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1">
+              {lockout.isLocked ? (
+                <span className="text-[10px] font-mono font-bold bg-rose-600 text-white px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
                   <ShieldAlert className="w-3 h-3" />
-                  CODE INCORRECT
+                  VERROUILLÉ ({lockout.remainingSeconds}s)
                 </span>
               ) : (
-                <span className="text-[10px] font-mono text-black/60 uppercase">
-                  Requis
+                <span className="text-[10px] font-mono text-black/70 uppercase">
+                  Protégé par hashage
                 </span>
               )}
             </div>
@@ -175,13 +171,7 @@ export const DeleteSplatModal: React.FC<DeleteSplatModalProps> = ({
                   setSecretCode(e.target.value);
                   if (error) setError(null);
                 }}
-                className={`w-full bg-white border ${
-                  isCodeAuthorized 
-                    ? 'border-black ring-1 ring-black' 
-                    : secretCode.trim().length > 0 
-                      ? 'border-rose-500' 
-                      : 'border-black'
-                } px-3 py-2 pr-10 text-xs font-mono text-black placeholder:text-black/40 focus:outline-none focus:bg-zinc-50`}
+                className="w-full bg-white border border-black px-3 py-2 pr-10 text-xs font-mono text-black placeholder:text-black/40 focus:outline-none focus:bg-zinc-50"
               />
               <button
                 type="button"
@@ -197,7 +187,7 @@ export const DeleteSplatModal: React.FC<DeleteSplatModalProps> = ({
               </button>
             </div>
             <p className="text-[10px] font-mono text-black/60 mt-1.5">
-              Utilisez le même code secret d'autorisation que pour l'ajout de splats.
+              Chiffrement SHA-256 avec protection contre les attaques par force brute (max 5 tentatives).
             </p>
           </div>
 
@@ -220,11 +210,11 @@ export const DeleteSplatModal: React.FC<DeleteSplatModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={!isCodeAuthorized}
+              disabled={!secretCode.trim() || lockout.isLocked}
               className={`px-4 py-2 border border-black text-xs font-mono uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
-                isCodeAuthorized
-                  ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-[2px_2px_0px_#000000] cursor-pointer'
-                  : 'bg-zinc-200 text-zinc-500 border-zinc-400 cursor-not-allowed'
+                !secretCode.trim() || lockout.isLocked
+                  ? 'bg-zinc-200 text-zinc-500 border-zinc-400 cursor-not-allowed'
+                  : 'bg-rose-600 hover:bg-rose-700 text-white shadow-[2px_2px_0px_#000000] cursor-pointer'
               }`}
             >
               <Trash2 className="w-3.5 h-3.5" />

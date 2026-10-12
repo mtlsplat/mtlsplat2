@@ -14,6 +14,7 @@ import { FullscreenViewerModal } from './components/FullscreenViewerModal';
 import { AddSplatModal } from './components/AddSplatModal';
 import { DeleteSplatModal } from './components/DeleteSplatModal';
 import { EditDescriptionModal } from './components/EditDescriptionModal';
+import { SecuritySettingsModal } from './components/SecuritySettingsModal';
 import { GlbViewer } from './components/GlbViewer';
 import { MouseGradient } from './components/MouseGradient';
 import { 
@@ -101,6 +102,7 @@ export default function App() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [splatToDelete, setSplatToDelete] = useState<SplatItem | null>(null);
   const [splatToEdit, setSplatToEdit] = useState<SplatItem | null>(null);
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   
   // Cinema view selected ID
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
@@ -309,6 +311,7 @@ export default function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onOpenAddModal={() => setIsAddOpen(true)}
+          onOpenSecurityModal={() => setIsSecurityOpen(true)}
           isPlayingAudio={isPlayingAudio}
           onToggleAudio={handleToggleAudio}
           is3DPreviewEnabled={is3DPreviewEnabled}
@@ -546,6 +549,12 @@ export default function App() {
         splat={splatToEdit}
         onClose={() => setSplatToEdit(null)}
         onSave={handleUpdateSplat}
+      />
+
+      {/* Security Admin Password Settings Modal */}
+      <SecuritySettingsModal
+        isOpen={isSecurityOpen}
+        onClose={() => setIsSecurityOpen(false)}
       />
     </div>
   );

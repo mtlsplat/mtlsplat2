@@ -12,7 +12,7 @@ import {
   Cloud
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
-import { REQUIRED_SECRET_CODE } from '../constants/auth';
+import { REQUIRED_SECRET_CODE, verifyAdminPasscode, getLockoutStatus } from '../constants/auth';
 
 interface EditDescriptionModalProps {
   splat: SplatItem | null;
@@ -48,7 +48,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
 
   if (!isOpen || !splat) return null;
 
-  const isCodeAuthorized = secretCode.trim() === REQUIRED_SECRET_CODE;
+  const lockout = getLockoutStatus();
   const titleCharCount = title.length;
   const descCharCount = description.length;
 
@@ -56,9 +56,10 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
     e.preventDefault();
     setErrorMessage('');
 
-    // Strict validation of shared secret code
-    if (secretCode.trim() !== REQUIRED_SECRET_CODE) {
-      setErrorMessage("Code secret invalide. Vous devez saisir le code d'autorisation (9210) pour pouvoir enregistrer les modifications.");
+    // Cryptographic validation with lockout protection
+    const authResult = await verifyAdminPasscode(secretCode);
+    if (!authResult.success) {
+      setErrorMessage(authResult.error || "Code secret d'autorisation invalide.");
       return;
     }
 
@@ -255,29 +256,24 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
           </div>
 
           {/* Secret Code Input Section */}
-          <div className={`p-3.5 border ${isCodeAuthorized ? 'border-black bg-zinc-50' : 'border-black bg-white'} transition-colors shadow-[2px_2px_0px_#000000]`}>
+          <div className="p-3.5 border border-black bg-zinc-50 transition-colors shadow-[2px_2px_0px_#000000]">
             <div className="flex items-center justify-between mb-1.5">
               <label 
                 htmlFor="edit-secret-code-input"
                 className="text-[11px] font-mono uppercase text-black font-black flex items-center gap-1.5 cursor-pointer"
               >
                 <KeyRound className="w-3.5 h-3.5 text-black" />
-                <span>Code Secret d'Autorisation <span className="text-rose-600">*</span></span>
+                <span>Code Secret d'Autorisation (Chiffré) <span className="text-rose-600">*</span></span>
               </label>
 
-              {isCodeAuthorized ? (
-                <span className="text-[10px] font-mono font-bold bg-black text-white px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                  AUTORISÉ
-                </span>
-              ) : secretCode.trim().length > 0 ? (
-                <span className="text-[10px] font-mono font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1">
+              {lockout.isLocked ? (
+                <span className="text-[10px] font-mono font-bold bg-rose-600 text-white px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
                   <ShieldAlert className="w-3 h-3" />
-                  CODE INCORRECT
+                  VERROUILLÉ ({lockout.remainingSeconds}s)
                 </span>
               ) : (
-                <span className="text-[10px] font-mono text-black/60 uppercase">
-                  Requis
+                <span className="text-[10px] font-mono text-black/70 uppercase">
+                  Protégé par hashage
                 </span>
               )}
             </div>
@@ -294,13 +290,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
                   setSecretCode(e.target.value);
                   if (errorMessage) setErrorMessage('');
                 }}
-                className={`w-full bg-white border ${
-                  isCodeAuthorized 
-                    ? 'border-black ring-1 ring-black' 
-                    : secretCode.trim().length > 0 
-                      ? 'border-rose-500' 
-                      : 'border-black'
-                } px-3 py-2 pr-10 text-xs font-mono text-black placeholder:text-black/40 focus:outline-none focus:bg-zinc-50`}
+                className="w-full bg-white border border-black px-3 py-2 pr-10 text-xs font-mono text-black placeholder:text-black/40 focus:outline-none focus:bg-zinc-50"
               />
               <button
                 type="button"
@@ -316,7 +306,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
               </button>
             </div>
             <p className="text-[10px] font-mono text-black/60 mt-1.5">
-              Le même code confidentiel requis pour ajouter, modifier ou supprimer un splat.
+              Chiffrement SHA-256 avec protection contre les attaques par force brute (max 5 tentatives).
             </p>
           </div>
 
@@ -339,7 +329,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || titleCharCount === 0 || descCharCount === 0 || titleCharCount > 100 || descCharCount > 1000 || !isCodeAuthorized}
+              disabled={isSubmitting || titleCharCount === 0 || descCharCount === 0 || titleCharCount > 100 || descCharCount > 1000 || !secretCode.trim() || lockout.isLocked}
               className="px-4 py-2 border border-black bg-black text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-mono uppercase tracking-wider transition-colors shadow-[2px_2px_0px_#000000] flex items-center gap-1.5"
             >
               {isSubmitting ? (
