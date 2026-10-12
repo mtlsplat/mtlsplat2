@@ -9,13 +9,11 @@ import { DEFAULT_SPLATS } from './data/defaultSplats';
 import { soundtrack } from './services/soundtrackService';
 import { Navbar } from './components/Navbar';
 import { SplatCard } from './components/SplatCard';
-import { DualCompareView } from './components/DualCompareView';
 import { CinemaView } from './components/CinemaView';
 import { FullscreenViewerModal } from './components/FullscreenViewerModal';
-import { EmbedCodeModal } from './components/EmbedCodeModal';
 import { AddSplatModal } from './components/AddSplatModal';
 import { DeleteSplatModal } from './components/DeleteSplatModal';
-import { ControlsGuideModal } from './components/ControlsGuideModal';
+import { EditDescriptionModal } from './components/EditDescriptionModal';
 import { MouseGradient } from './components/MouseGradient';
 import { 
   Eye, 
@@ -26,7 +24,8 @@ import {
 import { 
   subscribeToRemoteSplats, 
   saveSplatToFirestore, 
-  deleteSplatFromFirestore 
+  deleteSplatFromFirestore,
+  updateSplatDescriptionInFirestore
 } from './firebase';
 
 const STORAGE_KEY = 'gaussian_splats_gallery_data_v5';
@@ -98,10 +97,9 @@ export default function App() {
   
   // Modals state
   const [modalSplat, setModalSplat] = useState<SplatItem | null>(null);
-  const [embedSplat, setEmbedSplat] = useState<SplatItem | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [splatToDelete, setSplatToDelete] = useState<SplatItem | null>(null);
+  const [splatToEdit, setSplatToEdit] = useState<SplatItem | null>(null);
   
   // Cinema view selected ID
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
@@ -164,11 +162,18 @@ export default function App() {
           const merged = DEFAULT_SPLATS.filter((d) => !currentDeleted.has(d.id));
           const seen = new Set(merged.map((m) => m.id));
 
-          // 1. Add remote splats from Firestore
+          // 1. Add or update remote splats from Firestore
           for (const remote of remoteSplats) {
-            if (!currentDeleted.has(remote.id) && !seen.has(remote.id)) {
-              merged.push(mergeWithDefaults(remote));
-              seen.add(remote.id);
+            if (!currentDeleted.has(remote.id)) {
+              if (seen.has(remote.id)) {
+                const idx = merged.findIndex((m) => m.id === remote.id);
+                if (idx !== -1) {
+                  merged[idx] = { ...merged[idx], ...mergeWithDefaults(remote) };
+                }
+              } else {
+                merged.push(mergeWithDefaults(remote));
+                seen.add(remote.id);
+              }
             }
           }
 
@@ -256,14 +261,21 @@ export default function App() {
     setSplatToDelete(null);
   };
 
-  const handleResetDefaults = () => {
-    if (window.confirm('Réinitialiser la galerie aux modèles 3D Gaussian Splats originaux?')) {
-      setDeletedIds(new Set());
-      deletedIdsRef.current = new Set();
-      localStorage.removeItem(DELETED_KEY);
-      setSplats(DEFAULT_SPLATS);
-      setCinemaId(DEFAULT_SPLATS[0]?.id || '');
-      localStorage.removeItem(STORAGE_KEY);
+  const handleUpdateDescription = async (id: string, newDescription: string) => {
+    // Immediate state update
+    setSplats((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, description: newDescription } : s))
+    );
+
+    if (modalSplat && modalSplat.id === id) {
+      setModalSplat((prev) => (prev ? { ...prev, description: newDescription } : null));
+    }
+
+    // Persist to Firestore if available
+    try {
+      await updateSplatDescriptionInFirestore(id, newDescription);
+    } catch (err) {
+      console.warn('Could not sync updated description to Firestore:', err);
     }
   };
 
@@ -275,8 +287,6 @@ export default function App() {
       splat.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
-
-  const hasCustomSplats = splats.some((s) => !s.isUserOriginal) || deletedIds.size > 0;
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col selection:bg-black selection:text-white w-full max-w-full overflow-x-hidden relative font-sans">
@@ -294,9 +304,6 @@ export default function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onOpenAddModal={() => setIsAddOpen(true)}
-          onOpenGuide={() => setIsGuideOpen(true)}
-          onResetDefaults={hasCustomSplats ? handleResetDefaults : undefined}
-          hasCustomSplats={hasCustomSplats}
           isPlayingAudio={isPlayingAudio}
           onToggleAudio={handleToggleAudio}
           is3DPreviewEnabled={is3DPreviewEnabled}
@@ -363,16 +370,6 @@ export default function App() {
                   <span className="text-xs font-mono font-bold uppercase text-black">
                     {is3DPreviewEnabled ? 'LIVE 3D ACTIF' : 'ÉCO ACTIF (0% GPU)'}
                   </span>
-                </div>
-
-                <div className="border-t border-black pt-3">
-                  <button
-                    onClick={() => setIsGuideOpen(true)}
-                    className="w-full text-left font-mono text-xs uppercase font-bold text-black hover:underline flex items-center justify-between"
-                  >
-                    <span>GUIDE NAVIGATION 6-DOF</span>
-                    <span>→</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -454,10 +451,7 @@ export default function App() {
                       isModalOpen={!!modalSplat}
                       globalPreviewEnabled={is3DPreviewEnabled}
                       onExplore={(s) => setModalSplat(s)}
-                      onEmbed={(s) => setEmbedSplat(s)}
-                      onCompareSelect={(s) => {
-                        setViewMode('compare');
-                      }}
+                      onEdit={(s) => setSplatToEdit(s)}
                       onDelete={handleRequestDelete}
                     />
                   ))}
@@ -473,20 +467,8 @@ export default function App() {
               selectedId={cinemaId}
               onSelectSplat={setCinemaId}
               onOpenExplore={(s) => setModalSplat(s)}
-              onOpenEmbed={(s) => setEmbedSplat(s)}
-              onOpenGuide={() => setIsGuideOpen(true)}
+              onEdit={(s) => setSplatToEdit(s)}
               onDelete={handleRequestDelete}
-              isModalOpen={!!modalSplat}
-              is3DPreviewEnabled={is3DPreviewEnabled}
-            />
-          )}
-
-          {/* VIEW MODE 3: DUAL SPLIT COMPARE */}
-          {viewMode === 'compare' && (
-            <DualCompareView
-              splats={splats}
-              onOpenExplore={(s) => setModalSplat(s)}
-              onOpenEmbed={(s) => setEmbedSplat(s)}
               isModalOpen={!!modalSplat}
               is3DPreviewEnabled={is3DPreviewEnabled}
             />
@@ -505,12 +487,6 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-4 uppercase font-bold text-[11px]">
-              <button
-                onClick={() => setIsGuideOpen(true)}
-                className="hover:underline transition-all"
-              >
-                Contrôles
-              </button>
               <button
                 onClick={() => setIsAddOpen(true)}
                 className="hover:underline transition-all"
@@ -537,15 +513,6 @@ export default function App() {
         splat={modalSplat}
         isOpen={!!modalSplat}
         onClose={() => setModalSplat(null)}
-        onOpenEmbed={(s) => setEmbedSplat(s)}
-        onOpenGuide={() => setIsGuideOpen(true)}
-      />
-
-      {/* Embed Code Modal */}
-      <EmbedCodeModal
-        splat={embedSplat}
-        isOpen={!!embedSplat}
-        onClose={() => setEmbedSplat(null)}
       />
 
       {/* Add Splat Modal */}
@@ -563,10 +530,12 @@ export default function App() {
         onConfirmDelete={handleConfirmDelete}
       />
 
-      {/* Controls & Spatial Navigation Guide Modal */}
-      <ControlsGuideModal
-        isOpen={isGuideOpen}
-        onClose={() => setIsGuideOpen(false)}
+      {/* Edit Description Modal */}
+      <EditDescriptionModal
+        isOpen={!!splatToEdit}
+        splat={splatToEdit}
+        onClose={() => setSplatToEdit(null)}
+        onSave={handleUpdateDescription}
       />
     </div>
   );

@@ -3,13 +3,10 @@ import {
   X, 
   Maximize2, 
   Minimize2, 
-  RotateCcw, 
   ExternalLink, 
-  Code, 
-  HelpCircle,
-  SlidersHorizontal,
-  Play,
-  Pause
+  SlidersHorizontal, 
+  Play, 
+  Pause 
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 import { getSplatPosterUrl } from '../data/defaultSplats';
@@ -18,8 +15,6 @@ interface FullscreenViewerModalProps {
   splat: SplatItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onOpenEmbed: (splat: SplatItem) => void;
-  onOpenGuide: () => void;
   onNext?: () => void;
   onPrev?: () => void;
   hasMultiple?: boolean;
@@ -29,11 +24,8 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
   splat,
   isOpen,
   onClose,
-  onOpenEmbed,
-  onOpenGuide,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [iframeKey, setIframeKey] = useState(0);
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
 
   useEffect(() => {
@@ -68,10 +60,6 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
     } else {
       document.exitFullscreen().catch((err) => console.error(err));
     }
-  };
-
-  const handleReload = () => {
-    setIframeKey((prev) => prev + 1);
   };
 
   // Fullscreen view: hide internal SuperSplat UI / "Play animation" button with &noui by default
@@ -175,31 +163,6 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
               <span className="hidden md:inline">{showNativeUi ? 'NATIVE UI' : 'CLEAN VIEW'}</span>
             </button>
 
-            <button
-              onClick={onOpenGuide}
-              title="Guide des contrôles"
-              className="p-1.5 md:px-2.5 md:py-1 text-xs font-mono uppercase tracking-wider border border-black bg-white text-black hover:bg-black hover:text-white transition-colors flex items-center gap-1.5"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">AIDE</span>
-            </button>
-
-            <button
-              onClick={() => onOpenEmbed(splat)}
-              title="Code embed HTML"
-              className="p-1.5 md:px-2.5 md:py-1 text-xs font-mono uppercase tracking-wider border border-black bg-white text-black hover:bg-black hover:text-white transition-colors hidden xs:flex items-center gap-1.5"
-            >
-              <Code className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">CODE</span>
-            </button>
-
-            <button
-              onClick={handleReload}
-              title="Recharger le viewport"
-              className="p-1.5 border border-black text-black hover:bg-black hover:text-white transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
 
             <a
               href={splat.url}
@@ -241,7 +204,7 @@ export const FullscreenViewerModal: React.FC<FullscreenViewerModalProps> = ({
           />
 
           <iframe
-            key={iframeKey}
+            key={splat.id}
             id="viewer"
             src={fullscreenUrl}
             allow="fullscreen; xr-spatial-tracking"

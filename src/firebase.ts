@@ -7,6 +7,7 @@ import {
   collection,
   onSnapshot,
   setDoc,
+  updateDoc,
   deleteDoc,
   query,
 } from 'firebase/firestore';
@@ -169,5 +170,20 @@ export async function deleteSplatFromFirestore(id: string): Promise<void> {
     await deleteDoc(docRef);
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `${SPLATS_PATH}/${sanitizedId}`);
+  }
+}
+
+/**
+ * Update the description of an existing splat in Firestore
+ */
+export async function updateSplatDescriptionInFirestore(id: string, description: string): Promise<void> {
+  const sanitizedId = id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 128);
+  const docRef = doc(db, SPLATS_PATH, sanitizedId);
+  try {
+    await updateDoc(docRef, {
+      description: (description || '').slice(0, 1000),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `${SPLATS_PATH}/${sanitizedId}`);
   }
 }

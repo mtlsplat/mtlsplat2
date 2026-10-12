@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { 
   Maximize2, 
-  RotateCcw, 
   ExternalLink, 
-  Code, 
-  HelpCircle,
   Eye, 
   EyeOff,
-  Trash2
+  Trash2,
+  Pencil
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 import { getSplatPosterUrl, DEFAULT_POSTER_SVG } from '../data/defaultSplats';
@@ -17,8 +15,7 @@ interface CinemaViewProps {
   selectedId: string;
   onSelectSplat: (id: string) => void;
   onOpenExplore: (splat: SplatItem) => void;
-  onOpenEmbed: (splat: SplatItem) => void;
-  onOpenGuide: () => void;
+  onEdit?: (splat: SplatItem) => void;
   onDelete?: (id: string) => void;
   isModalOpen?: boolean;
   is3DPreviewEnabled?: boolean;
@@ -29,8 +26,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
   selectedId,
   onSelectSplat,
   onOpenExplore,
-  onOpenEmbed,
-  onOpenGuide,
+  onEdit,
   onDelete,
   isModalOpen = false,
   is3DPreviewEnabled = false,
@@ -106,31 +102,6 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
               )}
             </button>
 
-            <button
-              onClick={onOpenGuide}
-              title="Guide navigation caméra"
-              className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-black hover:text-white border border-black transition-colors flex items-center gap-1"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">AIDE</span>
-            </button>
-
-            <button
-              onClick={() => onOpenEmbed(currentSplat)}
-              title="Obtenir le code HTML Iframe"
-              className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-black hover:text-white border border-black transition-colors flex items-center gap-1"
-            >
-              <Code className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">CODE</span>
-            </button>
-
-            <button
-              onClick={() => setIframeKey((k) => k + 1)}
-              title="Recharger le viewport"
-              className="p-1.5 text-black hover:bg-black hover:text-white border border-black transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
 
             <a
               href={currentSplat.url}
@@ -141,6 +112,18 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
+
+            {onEdit && currentSplat && (
+              <button
+                onClick={() => onEdit(currentSplat)}
+                title="Modifier la description de cette scène"
+                aria-label={`Modifier la description de ${currentSplat.title}`}
+                className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-black hover:text-white border border-black transition-colors flex items-center gap-1 group/edit shadow-[1px_1px_0px_#000000]"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">ÉDITER</span>
+              </button>
+            )}
 
             {onDelete && currentSplat && (
               <button
@@ -234,7 +217,7 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
             <span className="text-black/70">{currentSplat.captureNotes || 'Volumetric Radiance Field'}</span>
           </div>
 
-          <div className="text-zinc-700 text-xs max-w-lg">
+          <div className="text-zinc-700 text-xs max-w-lg line-clamp-2">
             {currentSplat.description}
           </div>
         </div>

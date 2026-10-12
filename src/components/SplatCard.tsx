@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Maximize2, 
   ExternalLink, 
-  Code, 
-  Columns, 
   Trash2, 
+  Pencil,
   MousePointer,
   Eye,
   EyeOff
@@ -15,8 +14,7 @@ import { getSplatPosterUrl, DEFAULT_POSTER_SVG } from '../data/defaultSplats';
 interface SplatCardProps {
   splat: SplatItem;
   onExplore: (splat: SplatItem) => void;
-  onEmbed: (splat: SplatItem) => void;
-  onCompareSelect?: (splat: SplatItem) => void;
+  onEdit?: (splat: SplatItem) => void;
   onDelete?: (id: string) => void;
   isModalOpen?: boolean;
   globalPreviewEnabled?: boolean;
@@ -25,8 +23,7 @@ interface SplatCardProps {
 export const SplatCard: React.FC<SplatCardProps> = ({
   splat,
   onExplore,
-  onEmbed,
-  onCompareSelect,
+  onEdit,
   onDelete,
   isModalOpen = false,
   globalPreviewEnabled = false,
@@ -278,22 +275,14 @@ export const SplatCard: React.FC<SplatCardProps> = ({
               </button>
             )}
 
-            {/* Secondary Actions */}
-            <button
-              onClick={() => onEmbed(splat)}
-              title="Obtenir le code HTML iframe"
-              className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000]"
-            >
-              <Code className="w-3.5 h-3.5" />
-            </button>
-
-            {onCompareSelect && (
+            {onEdit && (
               <button
-                onClick={() => onCompareSelect(splat)}
-                title="Comparer en écran divisé"
-                className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000]"
+                onClick={() => onEdit(splat)}
+                title="Modifier la description"
+                aria-label={`Modifier la description de ${splat.title}`}
+                className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000] flex items-center justify-center group/edit"
               >
-                <Columns className="w-3.5 h-3.5" />
+                <Pencil className="w-3.5 h-3.5" />
               </button>
             )}
 

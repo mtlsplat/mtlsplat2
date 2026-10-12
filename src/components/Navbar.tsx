@@ -1,16 +1,13 @@
 import React from 'react';
 import { 
   LayoutGrid, 
-  Columns, 
   Tv, 
   Plus, 
-  HelpCircle, 
-  Search,
-  RotateCcw,
-  Volume2,
-  VolumeX,
-  Eye,
-  EyeOff
+  Search, 
+  Volume2, 
+  VolumeX, 
+  Eye, 
+  EyeOff 
 } from 'lucide-react';
 import { ViewMode } from '../types/splat';
 
@@ -20,9 +17,6 @@ interface NavbarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onOpenAddModal: () => void;
-  onOpenGuide: () => void;
-  onResetDefaults?: () => void;
-  hasCustomSplats: boolean;
   isPlayingAudio: boolean;
   onToggleAudio: () => void;
   is3DPreviewEnabled: boolean;
@@ -35,9 +29,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchQuery,
   onSearchChange,
   onOpenAddModal,
-  onOpenGuide,
-  onResetDefaults,
-  hasCustomSplats,
   isPlayingAudio,
   onToggleAudio,
   is3DPreviewEnabled,
@@ -87,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 onClick={() => onViewModeChange('cinema')}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors border-r border-black ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors ${
                   viewMode === 'cinema'
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-black/5'
@@ -96,19 +87,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Tv className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Cinéma</span>
-              </button>
-
-              <button
-                onClick={() => onViewModeChange('compare')}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors ${
-                  viewMode === 'compare'
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black hover:bg-black/5'
-                }`}
-                title="Side-by-Side Dual Compare"
-              >
-                <Columns className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Comparer</span>
               </button>
             </nav>
 
@@ -177,27 +155,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
-            {/* Controls Guide */}
-            <button
-              onClick={onOpenGuide}
-              title="Guide des contrôles caméra"
-              className="p-1.5 sm:px-2.5 sm:py-1.5 border border-black bg-white text-black hover:bg-black hover:text-white transition-colors text-xs font-mono uppercase tracking-wider flex items-center gap-1"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline text-[11px]">AIDE</span>
-            </button>
-
-            {/* Reset Defaults */}
-            {hasCustomSplats && onResetDefaults && (
-              <button
-                onClick={onResetDefaults}
-                title="Réinitialiser la galerie par défaut"
-                className="p-1.5 sm:px-2.5 sm:py-1.5 border border-black bg-white text-black hover:bg-black hover:text-white transition-colors text-xs font-mono hidden sm:flex items-center gap-1"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden lg:inline text-[11px]">RESET</span>
-              </button>
-            )}
 
             {/* Add Splat CTA */}
             <button
