@@ -14,6 +14,7 @@ import { FullscreenViewerModal } from './components/FullscreenViewerModal';
 import { AddSplatModal } from './components/AddSplatModal';
 import { DeleteSplatModal } from './components/DeleteSplatModal';
 import { EditDescriptionModal } from './components/EditDescriptionModal';
+import { GlbViewer } from './components/GlbViewer';
 import { MouseGradient } from './components/MouseGradient';
 import { 
   Eye, 
@@ -25,7 +26,7 @@ import {
   subscribeToRemoteSplats, 
   saveSplatToFirestore, 
   deleteSplatFromFirestore,
-  updateSplatDescriptionInFirestore
+  updateSplatInFirestore
 } from './firebase';
 
 const STORAGE_KEY = 'gaussian_splats_gallery_data_v5';
@@ -159,7 +160,10 @@ export default function App() {
         setCloudSynced(true);
         setSplats((prev) => {
           const currentDeleted = deletedIdsRef.current;
-          const merged = DEFAULT_SPLATS.filter((d) => !currentDeleted.has(d.id));
+          const merged = DEFAULT_SPLATS.filter((d) => !currentDeleted.has(d.id)).map((d) => {
+            const local = prev.find((p) => p.id === d.id);
+            return local ? { ...d, ...local } : d;
+          });
           const seen = new Set(merged.map((m) => m.id));
 
           // 1. Add or update remote splats from Firestore
@@ -261,21 +265,22 @@ export default function App() {
     setSplatToDelete(null);
   };
 
-  const handleUpdateDescription = async (id: string, newDescription: string) => {
-    // Immediate state update
+  const handleUpdateSplat = async (splat: SplatItem, newTitle: string, newDescription: string) => {
+    // 1. Immediate optimistic UI update
     setSplats((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, description: newDescription } : s))
+      prev.map((s) => (s.id === splat.id ? { ...s, title: newTitle, description: newDescription } : s))
     );
 
-    if (modalSplat && modalSplat.id === id) {
-      setModalSplat((prev) => (prev ? { ...prev, description: newDescription } : null));
+    if (modalSplat && modalSplat.id === splat.id) {
+      setModalSplat((prev) => (prev ? { ...prev, title: newTitle, description: newDescription } : null));
     }
 
-    // Persist to Firestore if available
+    // 2. Cloud sync: persist updated title and description to Firestore
     try {
-      await updateSplatDescriptionInFirestore(id, newDescription);
+      await updateSplatInFirestore(splat, newTitle, newDescription);
     } catch (err) {
-      console.warn('Could not sync updated description to Firestore:', err);
+      console.error('Failed to sync updated splat to Firestore:', err);
+      throw err;
     }
   };
 
@@ -473,6 +478,11 @@ export default function App() {
               is3DPreviewEnabled={is3DPreviewEnabled}
             />
           )}
+
+          {/* VIEW MODE 3: GLB 3D MODEL VIEWER */}
+          {viewMode === 'glb' && (
+            <GlbViewer />
+          )}
         </main>
 
         {/* Minimalist Brutalist Footer */}
@@ -530,12 +540,12 @@ export default function App() {
         onConfirmDelete={handleConfirmDelete}
       />
 
-      {/* Edit Description Modal */}
+      {/* Edit Title & Description Modal */}
       <EditDescriptionModal
         isOpen={!!splatToEdit}
         splat={splatToEdit}
         onClose={() => setSplatToEdit(null)}
-        onSave={handleUpdateDescription}
+        onSave={handleUpdateSplat}
       />
     </div>
   );

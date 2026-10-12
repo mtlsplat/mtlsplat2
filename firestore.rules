@@ -38,21 +38,18 @@ service cloud.firestore {
       // Public gallery: All visitors can read and list splats
       allow get, list: if true;
 
-      // Anyone can add a valid splat to the community archive
+      // Anyone can add or seed a valid splat to the archive
       allow create: if isValidId(splatId) &&
         incoming().id == splatId &&
-        isValidSplat(incoming()) &&
-        incoming().isUserOriginal != true;
+        isValidSplat(incoming());
 
-      // Allow deleting user-contributed splats, but protect original Montreal archives
-      allow delete: if isValidId(splatId) &&
-        (!('isUserOriginal' in existing()) || existing().isUserOriginal != true);
+      // Allow deleting splats
+      allow delete: if isValidId(splatId);
 
-      // Updates must preserve immutable id and original flag
+      // Updates must preserve immutable id and pass schema validation
       allow update: if isValidId(splatId) &&
         isValidSplat(incoming()) &&
-        incoming().id == existing().id &&
-        (!('isUserOriginal' in existing()) || existing().isUserOriginal != true);
+        incoming().id == existing().id;
     }
   }
 }

@@ -7,7 +7,8 @@ import {
   Volume2, 
   VolumeX, 
   Eye, 
-  EyeOff 
+  EyeOff,
+  Box
 } from 'lucide-react';
 import { ViewMode } from '../types/splat';
 
@@ -78,7 +79,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 onClick={() => onViewModeChange('cinema')}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors border-r border-black ${
                   viewMode === 'cinema'
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-black/5'
@@ -87,6 +88,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Tv className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Cinéma</span>
+              </button>
+
+              <button
+                onClick={() => onViewModeChange('glb')}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors ${
+                  viewMode === 'glb'
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black hover:bg-black/5'
+                }`}
+                title="3D .GLB Model Viewer"
+              >
+                <Box className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Modèles .GLB</span>
               </button>
             </nav>
 

@@ -8,7 +8,8 @@ import {
   KeyRound, 
   ShieldAlert, 
   Eye, 
-  EyeOff 
+  EyeOff,
+  Cloud
 } from 'lucide-react';
 import { SplatItem } from '../types/splat';
 import { REQUIRED_SECRET_CODE } from '../constants/auth';
@@ -17,7 +18,7 @@ interface EditDescriptionModalProps {
   splat: SplatItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (id: string, newDescription: string) => Promise<void> | void;
+  onSave: (splat: SplatItem, newTitle: string, newDescription: string) => Promise<void> | void;
 }
 
 export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
@@ -26,6 +27,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [secretCode, setSecretCode] = useState('');
   const [showSecretCode, setShowSecretCode] = useState(false);
@@ -35,6 +37,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
 
   useEffect(() => {
     if (isOpen && splat) {
+      setTitle(splat.title || '');
       setDescription(splat.description || '');
       setSecretCode('');
       setShowSecretCode(false);
@@ -46,7 +49,8 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
   if (!isOpen || !splat) return null;
 
   const isCodeAuthorized = secretCode.trim() === REQUIRED_SECRET_CODE;
-  const charCount = description.length;
+  const titleCharCount = title.length;
+  const descCharCount = description.length;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,37 +58,46 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
 
     // Strict validation of shared secret code
     if (secretCode.trim() !== REQUIRED_SECRET_CODE) {
-      setErrorMessage("Code secret invalide. Vous devez saisir le code d'autorisation pour pouvoir modifier cette description.");
+      setErrorMessage("Code secret invalide. Vous devez saisir le code d'autorisation (9210) pour pouvoir enregistrer les modifications.");
       return;
     }
 
-    const trimmed = description.trim();
-    if (!trimmed) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setErrorMessage('Le titre ne peut pas être vide.');
+      return;
+    }
+    if (trimmedTitle.length > 100) {
+      setErrorMessage('Le titre ne doit pas dépasser 100 caractères.');
+      return;
+    }
+
+    const trimmedDesc = description.trim();
+    if (!trimmedDesc) {
       setErrorMessage('La description ne peut pas être vide.');
       return;
     }
-
-    if (trimmed.length > 1000) {
+    if (trimmedDesc.length > 1000) {
       setErrorMessage('La description ne doit pas dépasser 1000 caractères.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await onSave(splat.id, trimmed);
+      await onSave(splat, trimmedTitle, trimmedDesc);
       setSavedSuccess(true);
       setTimeout(() => {
         setIsSubmitting(false);
         onClose();
-      }, 400);
+      }, 500);
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err?.message || 'Erreur lors de la mise à jour de la description.');
+      setErrorMessage(err?.message || 'Erreur lors de la mise à jour et de la synchronisation cloud.');
       setIsSubmitting(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       handleSubmit(e);
     }
@@ -94,7 +107,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="edit-description-title"
+      aria-labelledby="edit-splat-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
@@ -110,13 +123,13 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
             </div>
             <div>
               <h2
-                id="edit-description-title"
+                id="edit-splat-title"
                 className="text-base font-black uppercase tracking-tight text-black font-mono"
               >
-                MODIFIER LA DESCRIPTION
+                MODIFIER LE MODÈLE 3D
               </h2>
               <p className="text-xs font-mono text-black/60">
-                Action sécurisée · Code secret requis
+                Titre & Description · Synchronisation Cloud active
               </p>
             </div>
           </div>
@@ -151,25 +164,60 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
                 ID: {splat.supersplatId}
               </span>
             </div>
-            <h4 className="text-xs font-bold uppercase truncate mt-1 text-black">
+            <h4 className="text-xs font-bold uppercase truncate mt-1 text-black font-mono">
               {splat.title}
             </h4>
           </div>
         </div>
 
-        {/* Security Notification Banner */}
-        <div className="mb-4 p-2.5 border border-black bg-zinc-50 flex items-center justify-between text-xs font-mono">
+        {/* Security & Cloud Sync Status */}
+        <div className="mb-4 p-2.5 border border-black bg-zinc-50 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
           <div className="flex items-center gap-2">
             <Lock className="w-3.5 h-3.5 text-black shrink-0" />
             <span className="font-bold uppercase tracking-wider text-[11px]">Accès Restreint</span>
           </div>
-          <span className="text-[10px] text-black/70 uppercase">
-            Même code d'autorisation requis
-          </span>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5">
+            <Cloud className="w-3 h-3 text-emerald-600 stroke-[2.5]" />
+            <span>Cloud Sync Firestore Actif</span>
+          </div>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Title Input */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label
+                htmlFor="splat-title-input"
+                className="block text-xs font-mono uppercase tracking-wider text-black font-bold"
+              >
+                Titre du modèle 3D <span className="text-rose-600">*</span>
+              </label>
+              <span
+                className={`text-[10px] font-mono ${
+                  titleCharCount > 100 ? 'text-red-600 font-bold' : 'text-black/50'
+                }`}
+              >
+                {titleCharCount} / 100 caractères
+              </span>
+            </div>
+
+            <input
+              id="splat-title-input"
+              type="text"
+              autoFocus
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (errorMessage) setErrorMessage('');
+              }}
+              onKeyDown={handleKeyDown}
+              maxLength={100}
+              placeholder="Ex: MOTO RADIANCE FIELD..."
+              className="w-full p-2.5 border border-black bg-white text-black text-xs font-mono font-bold uppercase focus:outline-none focus:ring-1 focus:ring-black shadow-[2px_2px_0px_#000000]"
+            />
+          </div>
+
           {/* Description Textarea */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -181,17 +229,16 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
               </label>
               <span
                 className={`text-[10px] font-mono ${
-                  charCount > 1000 ? 'text-red-600 font-bold' : 'text-black/50'
+                  descCharCount > 1000 ? 'text-red-600 font-bold' : 'text-black/50'
                 }`}
               >
-                {charCount} / 1000 caractères
+                {descCharCount} / 1000 caractères
               </span>
             </div>
 
             <textarea
               id="splat-description-input"
               rows={4}
-              autoFocus
               value={description}
               onChange={(e) => {
                 setDescription(e.target.value);
@@ -269,7 +316,7 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
               </button>
             </div>
             <p className="text-[10px] font-mono text-black/60 mt-1.5">
-              Le même code confidentiel requis pour ajouter ou supprimer un splat.
+              Le même code confidentiel requis pour ajouter, modifier ou supprimer un splat.
             </p>
           </div>
 
@@ -292,23 +339,23 @@ export const EditDescriptionModal: React.FC<EditDescriptionModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || charCount > 1000 || !isCodeAuthorized}
+              disabled={isSubmitting || titleCharCount === 0 || descCharCount === 0 || titleCharCount > 100 || descCharCount > 1000 || !isCodeAuthorized}
               className="px-4 py-2 border border-black bg-black text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-mono uppercase tracking-wider transition-colors shadow-[2px_2px_0px_#000000] flex items-center gap-1.5"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Enregistrement...</span>
+                  <span>Synchronisation Cloud...</span>
                 </>
               ) : savedSuccess ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-green-400" />
-                  <span>Enregistré !</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" />
+                  <span>Synchronisé au Cloud !</span>
                 </>
               ) : (
                 <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Enregistrer la modification</span>
+                  <Cloud className="w-3.5 h-3.5" />
+                  <span>Enregistrer & Synchroniser</span>
                 </>
               )}
             </button>

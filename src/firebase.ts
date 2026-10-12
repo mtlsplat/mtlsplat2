@@ -139,7 +139,7 @@ export async function saveSplatToFirestore(splat: SplatItem): Promise<void> {
     description: (splat.description || '').slice(0, 1000),
     url: splat.url.slice(0, 500),
     category: (splat.category || 'Communauté').slice(0, 100),
-    isUserOriginal: false,
+    isUserOriginal: Boolean(splat.isUserOriginal),
     createdAt: splat.createdAt || new Date().toISOString().split('T')[0],
   };
 
@@ -154,7 +154,7 @@ export async function saveSplatToFirestore(splat: SplatItem): Promise<void> {
   }
 
   try {
-    await setDoc(docRef, payload);
+    await setDoc(docRef, payload, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${SPLATS_PATH}/${sanitizedId}`);
   }
@@ -174,7 +174,48 @@ export async function deleteSplatFromFirestore(id: string): Promise<void> {
 }
 
 /**
- * Update the description of an existing splat in Firestore
+ * Persist updates (title, description) of any splat into Firestore.
+ * Using setDoc with merge: true ensures both canonical seeds and community splats
+ * are updated, or initialized if not yet present in the Firestore collection.
+ */
+export async function updateSplatInFirestore(
+  splat: SplatItem,
+  newTitle: string,
+  newDescription: string
+): Promise<void> {
+  const sanitizedId = splat.id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 128);
+  const docRef = doc(db, SPLATS_PATH, sanitizedId);
+
+  const payload: Record<string, any> = {
+    id: sanitizedId,
+    supersplatId: splat.supersplatId.slice(0, 64),
+    title: newTitle.trim().slice(0, 100),
+    description: (newDescription || '').trim().slice(0, 1000),
+    url: splat.url.slice(0, 500),
+    category: (splat.category || 'Communauté').slice(0, 100),
+    isUserOriginal: Boolean(splat.isUserOriginal),
+    createdAt: splat.createdAt || new Date().toISOString().split('T')[0],
+  };
+
+  if (splat.posterUrl) {
+    payload.posterUrl = splat.posterUrl.slice(0, 500);
+  }
+  if (splat.splatCount) {
+    payload.splatCount = splat.splatCount.slice(0, 100);
+  }
+  if (splat.captureNotes) {
+    payload.captureNotes = splat.captureNotes.slice(0, 500);
+  }
+
+  try {
+    await setDoc(docRef, payload, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `${SPLATS_PATH}/${sanitizedId}`);
+  }
+}
+
+/**
+ * Update the description of an existing splat in Firestore (legacy/convenience)
  */
 export async function updateSplatDescriptionInFirestore(id: string, description: string): Promise<void> {
   const sanitizedId = id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 128);

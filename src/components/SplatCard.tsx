@@ -278,8 +278,8 @@ export const SplatCard: React.FC<SplatCardProps> = ({
             {onEdit && (
               <button
                 onClick={() => onEdit(splat)}
-                title="Modifier la description"
-                aria-label={`Modifier la description de ${splat.title}`}
+                title="Modifier le modèle (Titre & Description)"
+                aria-label={`Modifier le titre et la description de ${splat.title}`}
                 className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors shadow-[2px_2px_0px_#000000] flex items-center justify-center group/edit"
               >
                 <Pencil className="w-3.5 h-3.5" />

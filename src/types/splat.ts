@@ -12,4 +12,4 @@ export interface SplatItem {
   isUserOriginal?: boolean;
 }
 
-export type ViewMode = 'grid' | 'cinema';
+export type ViewMode = 'grid' | 'cinema' | 'glb';

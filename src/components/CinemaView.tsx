@@ -116,8 +116,8 @@ export const CinemaView: React.FC<CinemaViewProps> = ({
             {onEdit && currentSplat && (
               <button
                 onClick={() => onEdit(currentSplat)}
-                title="Modifier la description de cette scène"
-                aria-label={`Modifier la description de ${currentSplat.title}`}
+                title="Modifier le modèle (Titre & Description)"
+                aria-label={`Modifier le titre et la description de ${currentSplat.title}`}
                 className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-mono uppercase text-black hover:bg-black hover:text-white border border-black transition-colors flex items-center gap-1 group/edit shadow-[1px_1px_0px_#000000]"
               >
                 <Pencil className="w-3.5 h-3.5" />
