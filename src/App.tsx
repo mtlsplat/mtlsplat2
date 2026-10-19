@@ -15,6 +15,7 @@ import { AddSplatModal } from './components/AddSplatModal';
 import { DeleteSplatModal } from './components/DeleteSplatModal';
 import { EditDescriptionModal } from './components/EditDescriptionModal';
 import { SecuritySettingsModal } from './components/SecuritySettingsModal';
+import { SeoHelpModal } from './components/SeoHelpModal';
 import { GlbViewer } from './components/GlbViewer';
 import { MouseGradient } from './components/MouseGradient';
 import { 
@@ -63,6 +64,21 @@ const mergeWithDefaults = (item: SplatItem): SplatItem => {
   return cleanItem;
 };
 
+const sortSplatsRecentFirst = (items: SplatItem[]): SplatItem[] => {
+  return [...items].sort((a, b) => {
+    const getTimestamp = (item: SplatItem) => {
+      const parts = item.id.split('-');
+      const lastPart = parts[parts.length - 1];
+      const parsedTime = parseInt(lastPart, 10);
+      if (!isNaN(parsedTime) && parsedTime > 1000000000) {
+        return parsedTime;
+      }
+      return new Date(item.createdAt || '2026-01-01').getTime();
+    };
+    return getTimestamp(b) - getTimestamp(a);
+  });
+};
+
 export default function App() {
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => getInitialDeletedIds());
   const deletedIdsRef = useRef<Set<string>>(deletedIds);
@@ -91,7 +107,7 @@ export default function App() {
       console.error('Failed to load saved splats from storage', e);
     }
 
-    return initialList.filter((s) => !initialDeleted.has(s.id));
+    return sortSplatsRecentFirst(initialList.filter((s) => !initialDeleted.has(s.id)));
   });
 
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -103,6 +119,7 @@ export default function App() {
   const [splatToDelete, setSplatToDelete] = useState<SplatItem | null>(null);
   const [splatToEdit, setSplatToEdit] = useState<SplatItem | null>(null);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [isSeoHelpOpen, setIsSeoHelpOpen] = useState(false);
   
   // Cinema view selected ID
   const [cinemaId, setCinemaId] = useState<string>(splats[0]?.id || '');
@@ -192,7 +209,7 @@ export default function App() {
             }
           }
 
-          return merged;
+          return sortSplatsRecentFirst(merged);
         });
       },
       (error) => {
@@ -217,11 +234,11 @@ export default function App() {
   const handleAddSplat = async (newSplat: SplatItem) => {
     try {
       await saveSplatToFirestore(newSplat);
-      setSplats((prev) => [newSplat, ...prev.filter((s) => s.id !== newSplat.id)]);
+      setSplats((prev) => sortSplatsRecentFirst([newSplat, ...prev.filter((s) => s.id !== newSplat.id)]));
       setCinemaId(newSplat.id);
     } catch (err) {
       console.error('Failed to sync to Firestore:', err);
-      setSplats((prev) => [newSplat, ...prev.filter((s) => s.id !== newSplat.id)]);
+      setSplats((prev) => sortSplatsRecentFirst([newSplat, ...prev.filter((s) => s.id !== newSplat.id)]));
       setCinemaId(newSplat.id);
       throw err;
     }
@@ -238,7 +255,7 @@ export default function App() {
     });
 
     setSplats((prev) => {
-      const remaining = prev.filter((s) => s.id !== id);
+      const remaining = sortSplatsRecentFirst(prev.filter((s) => s.id !== id));
       setCinemaId((currentCinemaId) => {
         if (currentCinemaId === id) {
           return remaining[0]?.id || '';
@@ -270,7 +287,9 @@ export default function App() {
   const handleUpdateSplat = async (splat: SplatItem, newTitle: string, newDescription: string) => {
     // 1. Immediate optimistic UI update
     setSplats((prev) =>
-      prev.map((s) => (s.id === splat.id ? { ...s, title: newTitle, description: newDescription } : s))
+      sortSplatsRecentFirst(
+        prev.map((s) => (s.id === splat.id ? { ...s, title: newTitle, description: newDescription } : s))
+      )
     );
 
     if (modalSplat && modalSplat.id === splat.id) {
@@ -287,13 +306,15 @@ export default function App() {
   };
 
   // Filtered splats based on search query
-  const filteredSplats = splats.filter((splat) => {
-    return (
-      splat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      splat.supersplatId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      splat.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  const filteredSplats = sortSplatsRecentFirst(
+    splats.filter((splat) => {
+      return (
+        splat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        splat.supersplatId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        splat.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    })
+  );
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col selection:bg-black selection:text-white w-full max-w-full overflow-x-hidden relative font-sans">
@@ -501,6 +522,14 @@ export default function App() {
 
             <div className="flex items-center gap-4 uppercase font-bold text-[11px]">
               <button
+                onClick={() => setIsSeoHelpOpen(true)}
+                className="hover:underline transition-all flex items-center gap-1 text-black"
+                title="Consulter le guide et le statut d'indexation Google"
+              >
+                <span>Google SEO</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+              </button>
+              <button
                 onClick={() => setIsAddOpen(true)}
                 className="hover:underline transition-all"
               >
@@ -555,6 +584,12 @@ export default function App() {
       <SecuritySettingsModal
         isOpen={isSecurityOpen}
         onClose={() => setIsSecurityOpen(false)}
+      />
+
+      {/* Google SEO Indexing Guide Modal */}
+      <SeoHelpModal
+        isOpen={isSeoHelpOpen}
+        onClose={() => setIsSeoHelpOpen(false)}
       />
     </div>
   );
